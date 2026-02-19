@@ -1,0 +1,18 @@
+# Node
+node_modules/
+**/node_modules/
+
+# Next.js
+.next/
+
+# Environment
+.env
+.env.*
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+
