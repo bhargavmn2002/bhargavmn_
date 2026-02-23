@@ -218,86 +218,103 @@ exports.createMedia = catchAsync(async (req, res) => {
   }
 
   let url;
+  let originalUrl = null; // Store original MP4 URL for offline playback 
   let finalFilename;
   let duration = null;
   let width = null;
   let height = null;
   let optimizationResults = null;
+if (type === 'IMAGE') {
+  // Optimize image
+  try {
+    optimizationResults = await imageOptimizationService.optimizeImage(req.file.path, filename);
+    width = optimizationResults.original.width;
+    height = optimizationResults.original.height;
 
-  if (type === 'IMAGE') {
-    // Optimize image
-    try {
-      optimizationResults = await imageOptimizationService.optimizeImage(req.file.path, filename);
-      width = optimizationResults.original.width;
-      height = optimizationResults.original.height;
-      
-      console.log(`🖼️ Image optimized: ${filename} - Original: ${optimizationResults.original.size} bytes`);
-    } catch (optimizationError) {
-      console.warn('⚠️ Image optimization failed:', optimizationError.message);
-      // Continue with original file if optimization fails
-    }
-    
+    console.log(`🖼️ Image optimized: ${filename} - Original: ${optimizationResults.original.size} bytes`);
+  } catch (optimizationError) {
+    console.warn('⚠️ Image optimization failed:', optimizationError.message);
+  }
+
+  url = `/uploads/${filename}`;
+  finalFilename = filename;
+  originalUrl = null;
+} else if (type === 'VIDEO') {
+
+  // Extract video metadata
+  const metadata = await extractVideoMetadata(req.file.path);
+  duration = metadata.duration > 0 ? Math.round(metadata.duration) : null;
+  width = metadata.width > 0 ? metadata.width : null;
+  height = metadata.height > 0 ? metadata.height : null;
+
+  const mediaId = crypto.randomBytes(12).toString('hex');
+  const hlsDir = path.join(uploadsDir, 'hls', mediaId);
+
+  // Store original MP4 for fallback/offline
+  originalUrl = `/uploads/${filename}`;
+  console.log(`📦 Original MP4 URL stored: ${originalUrl}`);
+
+  try {
+    fs.mkdirSync(hlsDir, { recursive: true });
+    console.log(`📁 Created HLS directory: ${hlsDir}`);
+  } catch (mkdirErr) {
+    console.error('❌ Failed to create HLS directory:', mkdirErr.message);
     url = `/uploads/${filename}`;
     finalFilename = filename;
-  } else if (type === 'VIDEO') {
-    // Extract video metadata first
-    const metadata = await extractVideoMetadata(req.file.path);
-    duration = metadata.duration > 0 ? Math.round(metadata.duration) : null;
-    width = metadata.width > 0 ? metadata.width : null;
-    height = metadata.height > 0 ? metadata.height : null;
+  }
 
-    const mediaId = crypto.randomBytes(12).toString('hex');
-    const hlsDir = path.join(uploadsDir, 'hls', mediaId);
-    
-    try {
-      fs.mkdirSync(hlsDir, { recursive: true });
-      console.log(`📁 Created HLS directory: ${hlsDir}`);
-    } catch (mkdirErr) {
-      console.error('❌ HLS mkdir error:', mkdirErr.message);
-      url = `/uploads/${filename}`;
-      finalFilename = filename;
-    }
+  if (!url) {
 
-    if (!url) {
-      const result = await convertToHLS(req.file.path, hlsDir);
-      if (result.success) {
-        // Verify HLS files were created
-        const m3u8Path = path.join(hlsDir, 'index.m3u8');
-        if (fs.existsSync(m3u8Path)) {
-          // Keep the original MP4 file for browser compatibility
-          // Don't delete the original file - browsers need MP4 fallback
-          url = `/uploads/hls/${mediaId}/index.m3u8`;
-          finalFilename = `hls/${mediaId}/index.m3u8`;
-          console.log(`✅ HLS conversion successful: ${url} (keeping original MP4 for fallback)`);
-        } else {
-          console.warn('⚠️ HLS conversion reported success but index.m3u8 not found');
-          // Clean up partial HLS directory
-          try {
-            if (fs.existsSync(hlsDir)) {
-              fs.rmSync(hlsDir, { recursive: true });
-            }
-          } catch (rmErr) {
-            console.warn('Failed to remove partial HLS dir:', rmErr.message);
-          }
-          url = `/uploads/${filename}`;
-          finalFilename = filename;
-        }
+    const result = await convertToHLS(req.file.path, hlsDir);
+
+    if (result.success) {
+
+      const m3u8Path = path.join(hlsDir, 'index.m3u8');
+
+      if (fs.existsSync(m3u8Path)) {
+
+        url = `/uploads/hls/${mediaId}/index.m3u8`;
+        finalFilename = `hls/${mediaId}/index.m3u8`;
+
+        console.log(`✅ HLS conversion successful: ${url}`);
+
       } else {
-        console.warn('❌ FFmpeg HLS conversion failed, falling back to original file:', result.error);
+
+        console.warn('⚠️ index.m3u8 not found after conversion');
+
         try {
           if (fs.existsSync(hlsDir)) {
             fs.rmSync(hlsDir, { recursive: true });
           }
-        } catch (rmErr) {
-          console.warn('Failed to remove partial HLS dir:', rmErr.message);
+        } catch (cleanupErr) {
+          console.warn('⚠️ Failed cleaning HLS dir:', cleanupErr.message);
         }
+
         url = `/uploads/${filename}`;
         finalFilename = filename;
+        originalUrl = null;
       }
+
+    } else {
+
+      console.warn('❌ HLS conversion failed, using original file');
+
+      try {
+        if (fs.existsSync(hlsDir)) {
+          fs.rmSync(hlsDir, { recursive: true });
+        }
+      } catch (cleanupErr) {
+        console.warn('⚠️ Failed cleaning HLS dir:', cleanupErr.message);
+      }
+
+      url = `/uploads/${filename}`;
+      finalFilename = filename;
+      originalUrl = null;
     }
   }
+}
 
-  // Parse endDate if provided
+ // Parse endDate if provided
   let endDate = null;
   if (req.body.endDate) {
     endDate = new Date(req.body.endDate);
@@ -325,6 +342,7 @@ exports.createMedia = catchAsync(async (req, res) => {
     filename: finalFilename,
     type,
     url,
+    originalUrl,
     fileSize,
     mimeType,
     duration,
@@ -342,6 +360,7 @@ exports.createMedia = catchAsync(async (req, res) => {
       filename: finalFilename,
       type,
       url,
+      originalUrl, 
       fileSize,
       mimeType,
       duration,
@@ -358,6 +377,7 @@ exports.createMedia = catchAsync(async (req, res) => {
     name: media.name,
     type: media.type,
     url: media.url,
+    originalUrl: media.originalUrl,   
     fileSize: media.fileSize
   });
 
@@ -871,7 +891,8 @@ exports.cleanupExpiredMedia = async () => {
     const expiredMedia = await prisma.media.findMany({
       where: {
         endDate: {
-          lte: new Date(),
+        not: null,  
+	lte: new Date(),
         },
       },
       include: {

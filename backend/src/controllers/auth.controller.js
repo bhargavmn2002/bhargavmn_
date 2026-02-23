@@ -11,20 +11,17 @@ const MAX_LOGIN_ATTEMPTS = parseInt(process.env.MAX_LOGIN_ATTEMPTS) || 5;
 const LOCKOUT_TIME = parseInt(process.env.LOCKOUT_TIME) || 15 * 60 * 1000; // 15 minutes
 
 // Helper function to check if IP is locked out
-const isLockedOut = (ip) => {
+const isLockedOut = async (ip) => {
   const attempts = loginAttempts.get(ip);
   if (!attempts) return false;
-  
+
   if (attempts.count >= MAX_LOGIN_ATTEMPTS) {
-    const timeSinceLastAttempt = Date.now() - attempts.lastAttempt;
-    if (timeSinceLastAttempt < LOCKOUT_TIME) {
-      return true;
-    } else {
-      // Reset attempts after lockout period
-      loginAttempts.delete(ip);
-      return false;
-    }
+    console.warn(`High login attempts from IP: ${ip}`);
+    
+    // Add small delay instead of block
+    await new Promise(resolve => setTimeout(resolve, 2000));
   }
+
   return false;
 };
 
@@ -58,7 +55,7 @@ exports.login = async (req, res) => {
     }
 
     // Check if IP is locked out
-    if (isLockedOut(clientIP)) {
+    if (await isLockedOut(clientIP)) {
       console.log(`Login attempt blocked: IP locked out - ${clientIP}`);
       return res.status(429).json({ 
         message: 'Too many failed login attempts. Please try again later.',
@@ -73,7 +70,7 @@ exports.login = async (req, res) => {
 
     const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase().trim() },
-      include: {
+     include: {
         clientProfile: true,
         managedByClientAdmin: {
           include: {

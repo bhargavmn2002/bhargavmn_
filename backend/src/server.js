@@ -1,3 +1,4 @@
+//app.use('/api/auth', authLimiter);
 require('dotenv').config();
 
 // Set timezone to India (IST)
@@ -83,7 +84,7 @@ let limiter, authLimiter;
 if (process.env.NODE_ENV === 'production') {
   limiter = rateLimit({
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW) || 15 * 60 * 1000,
-    max: parseInt(process.env.RATE_LIMIT_MAX) || 100,
+    max: parseInt(process.env.RATE_LIMIT_MAX) || 5000,
     standardHeaders: true,
     legacyHeaders: false,
   });
@@ -94,7 +95,9 @@ if (process.env.NODE_ENV === 'production') {
     skipSuccessfulRequests: true,
   });
 
-  app.use(limiter);
+  //app.use(limiter);
+   app.use('/api/auth', authLimiter);
+app.use('/api/admin', limiter);
   
   console.log('✅ Rate limiting enabled (production mode)');
 } else {
@@ -153,7 +156,8 @@ app.use(cors(corsOptions));
    BODY & LOGGING
 ========================= */
 
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ limit: '500mb' }));
+app.use(express.urlencoded({ extended: true, limit: '500mb' }));
 
 app.use(requestLogger);
 app.use(performanceMonitor);

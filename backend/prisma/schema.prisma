@@ -199,7 +199,8 @@ model Media {
   originalName String?
   filename     String?
   type         MediaType
-  url          String // File path or URL
+  url          String // File path or URL (HLS for videos)
+  originalUrl  String? // Original MP4 URL for offline playback
   duration     Int? // Duration in seconds (for videos)
   fileSize     Int? // File size in bytes
   mimeType     String? // MIME type (e.g., image/jpeg, video/mp4)

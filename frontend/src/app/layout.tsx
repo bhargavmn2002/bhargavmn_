@@ -112,8 +112,9 @@ export default function RootLayout({
                 // Also run on DOM changes
                 if (typeof MutationObserver !== 'undefined') {
                   const observer = new MutationObserver(hideNextJSIndicators);
-                  observer.observe(document.body, { childList: true, subtree: true });
-                }
+			if (document.body) {
+ 			 observer.observe(document.body, { childList: true, subtree: true });
+		}
               }
             `,
           }}
