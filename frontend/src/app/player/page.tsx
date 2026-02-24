@@ -409,13 +409,13 @@ export default function PlayerPage() {
                 </div>
 
                 <div className="flex items-center justify-center gap-2 text-gray-400">
-                  <div className="h-2 w-2 animate-pulse rounded-full bg-white"></div>
-                  <p className="text-sm">Waiting for pairing...</p>
+                  <div className="h-3 w-3 animate-pulse rounded-full bg-yellow-400 shadow-lg shadow-yellow-400/50"></div>
+                  <p className="text-sm font-medium">Waiting for pairing...</p>
                 </div>
               </div>
 
               {error && (
-                <div className="mt-6 rounded-lg bg-red-900/50 px-4 py-2 text-red-200">
+                <div className="mt-6 rounded-xl bg-red-900/50 px-6 py-3 text-red-200 border border-red-500/30 shadow-lg">
                   {error}
                 </div>
               )}
@@ -424,7 +424,7 @@ export default function PlayerPage() {
               <div className="mt-8">
                 <button
                   onClick={handleReset}
-                  className="rounded-lg bg-gray-800 px-6 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors"
+                  className="rounded-xl bg-gray-800 px-8 py-3 text-sm text-gray-300 hover:bg-gray-700 transition-all hover:shadow-lg font-medium"
                 >
                   Reset / Unpair
                 </button>
@@ -461,17 +461,24 @@ export default function PlayerPage() {
     }
 
     return (
-      <div className="flex min-h-screen items-center justify-center bg-black text-white">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-900 to-black text-white">
         <div className="text-center space-y-6">
           <div className="space-y-4">
-            <div className="inline-flex h-4 w-4 items-center justify-center">
-              <div className="h-3 w-3 animate-pulse rounded-full bg-green-500"></div>
+            <div className="inline-flex items-center justify-center mb-4">
+              <div className="h-4 w-4 animate-pulse rounded-full bg-green-400 shadow-lg shadow-green-400/50"></div>
             </div>
-            <h1 className="text-4xl font-bold">System Online</h1>
-            <p className="text-xl text-gray-400">Ready to receive content</p>
+            <div className="inline-flex items-center gap-3 mb-4">
+              <div className="rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 p-3 shadow-2xl">
+                <svg className="h-10 w-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </div>
+            </div>
+            <h1 className="text-5xl font-black bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">System Online</h1>
+            <p className="text-xl text-gray-400 font-semibold">Ready to receive content</p>
           </div>
 
-          <div className="mt-8 text-sm text-gray-500">
+          <div className="mt-8 text-sm text-gray-500 font-medium">
             <p>Display ID: {displayId.slice(-8)}</p>
           </div>
 
@@ -479,7 +486,7 @@ export default function PlayerPage() {
           <div className="mt-8">
             <button
               onClick={handleReset}
-              className="rounded-lg bg-gray-800 px-6 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors"
+              className="rounded-xl bg-gray-800 px-8 py-3 text-sm text-gray-300 hover:bg-gray-700 transition-all hover:shadow-lg font-medium"
             >
               Reset / Unpair
             </button>
@@ -491,17 +498,17 @@ export default function PlayerPage() {
 
   // Error State
   return (
-    <div className="flex min-h-screen items-center justify-center bg-black text-white">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-900 to-black text-white">
       <div className="text-center space-y-6">
-        <div className="text-6xl">⚠️</div>
-        <h1 className="text-3xl font-bold">Connection Error</h1>
-        <p className="text-gray-400">{error || 'Failed to connect to server'}</p>
+        <div className="text-7xl">⚠️</div>
+        <h1 className="text-4xl font-black bg-gradient-to-r from-red-400 to-orange-500 bg-clip-text text-transparent">Connection Error</h1>
+        <p className="text-gray-400 text-lg font-medium">{error || 'Failed to connect to server'}</p>
         <button
           onClick={() => {
             setPairingState('checking');
             generatePairingCode();
           }}
-          className="mt-4 rounded-lg bg-white px-6 py-3 text-black hover:bg-gray-200"
+          className="mt-4 rounded-xl bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 px-8 py-4 text-gray-900 font-bold shadow-lg hover:shadow-xl transition-all"
         >
           Retry
         </button>

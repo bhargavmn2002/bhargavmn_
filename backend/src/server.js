@@ -33,6 +33,7 @@ const healthService = require('./services/health.service');
 const cacheService = require('./services/cache.service');
 const imageOptimizationService = require('./services/image-optimization.service');
 const databaseOptimizationService = require('./services/database-optimization.service');
+const licenseCheckService = require('./services/license-check.service');
 
 // Middleware
 const { logAuthEvents, logSensitiveAccess, logSuspiciousActivity } = require('./middleware/logging.middleware');
@@ -98,14 +99,10 @@ if (process.env.NODE_ENV === 'production') {
   //app.use(limiter);
    app.use('/api/auth', authLimiter);
 app.use('/api/admin', limiter);
-  
-  console.log('✅ Rate limiting enabled (production mode)');
 } else {
   // No-op middleware for development
   limiter = (req, res, next) => next();
   authLimiter = (req, res, next) => next();
-  
-  console.log('⚠️  Rate limiting disabled (development mode)');
 }
 
 /* =========================
@@ -141,8 +138,6 @@ const corsOptions = {
       return callback(null, true);
     }
     
-    console.error(`❌ CORS blocked origin: ${origin}`);
-    console.error(`   Allowed origins: ${allowed.join(', ')}`);
     return callback(new Error('CORS blocked'));
   },
   credentials: true,
@@ -264,13 +259,12 @@ if (ENABLE_HTTPS) {
     
     server.listen(HTTPS_PORT, HOST, () => {
       console.log(`🔒 SignoX Backend running on HTTPS at ${HOST}:${HTTPS_PORT}`);
-      console.log(`🔐 SSL/TLS enabled - Secure connection established`);
       
       if (process.env.NODE_ENV === 'production') {
         cleanupService.start();
         healthService.start();
+        licenseCheckService.start();
         databaseOptimizationService.optimizeConnectionPool();
-        console.log('✅ Production services started');
       }
     });
 
@@ -280,15 +274,10 @@ if (ENABLE_HTTPS) {
       res.redirect(301, `https://${req.headers.host.replace(PORT, HTTPS_PORT)}${req.url}`);
     });
     
-    http.createServer(httpApp).listen(PORT, HOST, () => {
-      console.log(`↪️  HTTP redirect server running on ${HOST}:${PORT} -> HTTPS:${HTTPS_PORT}`);
-    });
+    http.createServer(httpApp).listen(PORT, HOST);
 
   } catch (error) {
     console.error('❌ Failed to start HTTPS server:', error.message);
-    console.error('   Please check SSL certificate paths in .env file');
-    console.error(`   SSL_CERT_PATH: ${process.env.SSL_CERT_PATH}`);
-    console.error(`   SSL_KEY_PATH: ${process.env.SSL_KEY_PATH}`);
     process.exit(1);
   }
 } else {
@@ -297,16 +286,12 @@ if (ENABLE_HTTPS) {
   
   server.listen(PORT, HOST, () => {
     console.log(`🚀 SignoX Backend running on HTTP at ${HOST}:${PORT}`);
-    
-    if (process.env.NODE_ENV === 'production') {
-      console.log('⚠️  Running in HTTP mode - Ensure SSL termination is handled by load balancer');
-    }
 
     if (process.env.NODE_ENV === 'production') {
       cleanupService.start();
       healthService.start();
+      licenseCheckService.start();
       databaseOptimizationService.optimizeConnectionPool();
-      console.log('✅ Production services started');
     }
   });
 }
@@ -316,9 +301,9 @@ if (ENABLE_HTTPS) {
 ========================= */
 
 const shutdown = () => {
-  console.log('🛑 Shutting down...');
   cleanupService.stop();
   healthService.stop();
+  licenseCheckService.stop();
   cacheService.disconnect();
   databaseOptimizationService.disconnect();
   server.close(() => process.exit(0));

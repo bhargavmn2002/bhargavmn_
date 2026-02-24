@@ -13,7 +13,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { StorageIndicator } from '@/components/ui/storage-indicator';
 import { cn } from '@/lib/utils';
-import { Loader2, Trash2, Upload, Video, Calendar, HardDrive, Maximize2, Monitor, Image as ImageIcon, FileText, Check } from 'lucide-react';
+import { Loader2, Trash2, Upload, Video, Calendar, HardDrive, Maximize2, Monitor, Image as ImageIcon, FileText, Check, Film } from 'lucide-react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 type MediaType = 'IMAGE' | 'VIDEO';
 
@@ -90,6 +92,13 @@ export default function MediaLibraryPage() {
   }, [user]);
 
   useEffect(() => {
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      once: true,
+      easing: 'ease-out-cubic',
+    });
+
     if (!user) return;
     if (user.role === 'STAFF' && user.staffRole === 'DISPLAY_MANAGER') {
       router.replace('/user/dashboard');
@@ -359,68 +368,77 @@ export default function MediaLibraryPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Media Library</h1>
-            <p className="mt-2 text-gray-600">Centralized media uploads (images/videos)</p>
-          </div>
+      <div className="space-y-8 pb-8">
+        {/* Header Section */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-orange-500/10 rounded-3xl blur-3xl"></div>
+          <div className="relative bg-gradient-to-br from-gray-900 to-black rounded-3xl p-8 border border-gray-800 shadow-2xl">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <Film className="h-10 w-10 text-yellow-400" />
+                  <h1 className="text-4xl font-black text-white">Media Library</h1>
+                </div>
+                <p className="text-gray-300 text-lg">Centralized media uploads (images/videos)</p>
+              </div>
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-            {storageInfo && (
-              <Card className="w-full sm:w-80">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <HardDrive className="h-4 w-4 text-gray-600" />
-                    <span className="text-sm font-medium text-gray-700">Storage Usage</span>
-                  </div>
-                  <StorageIndicator storageInfo={storageInfo} />
-                </CardContent>
-              </Card>
-            )}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-auto">
+                {storageInfo && (
+                  <Card className="border-white/20 bg-white/10 backdrop-blur-xl shadow-lg">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <HardDrive className="h-5 w-5 text-yellow-400" />
+                        <span className="text-sm font-bold text-white">Storage Usage</span>
+                      </div>
+                      <StorageIndicator storageInfo={storageInfo} />
+                    </CardContent>
+                  </Card>
+                )}
 
-            <div className="flex items-center gap-3">
-              <input
-                ref={fileInputRef}
-                type="file"
-                className="hidden"
-                accept="image/jpeg,image/png,video/mp4"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) onPickFile(f);
-                }}
-              />
-              <Button
-                onClick={() => {
-                  console.log('🔄 [DEBUG] Force refreshing media list...');
-                  fetchMedia();
-                }}
-                variant="outline"
-                className="gap-2"
-              >
-                🔄 Refresh
-              </Button>
-              <Button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={!canWrite || uploading || (storageInfo?.availableMB ?? 0) <= 0}
-                className="gap-2 signomart-primary hover:signomart-primary"
-              >
-                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                Upload
-              </Button>
+                <div className="flex items-center gap-3">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    accept="image/jpeg,image/png,video/mp4"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) onPickFile(f);
+                    }}
+                  />
+                  <Button
+                    onClick={() => {
+                      console.log('🔄 [DEBUG] Force refreshing media list...');
+                      fetchMedia();
+                    }}
+                    variant="outline"
+                    className="h-12 gap-2 border-white/20 text-white hover:bg-white/10 font-semibold"
+                  >
+                    🔄 Refresh
+                  </Button>
+                  <Button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={!canWrite || uploading || (storageInfo?.availableMB ?? 0) <= 0}
+                    className="h-12 gap-2 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-bold shadow-lg hover:shadow-yellow-500/50 transition-all duration-300 hover:scale-105"
+                  >
+                    {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
+                    Upload Media
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         {uploading && (
-          <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-            <div className="flex items-center justify-between text-sm mb-3">
-              <span className="text-gray-700 font-medium">Uploading…</span>
-              <span className="text-gray-600 font-semibold">{uploadProgress}%</span>
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-lg">
+            <div className="flex items-center justify-between text-sm mb-4">
+              <span className="text-gray-700 font-bold text-lg">Uploading…</span>
+              <span className="text-gray-900 font-black text-2xl">{uploadProgress}%</span>
             </div>
-            <div className="h-2.5 w-full rounded-full bg-gray-200 overflow-hidden">
+            <div className="h-4 w-full rounded-full bg-gray-200 overflow-hidden shadow-inner">
               <div
-                className="h-full rounded-full bg-green-500 transition-all duration-300 ease-out"
+                className="h-4 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all duration-300 ease-out shadow-lg"
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
@@ -428,10 +446,10 @@ export default function MediaLibraryPage() {
         )}
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
-          <TabsList>
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="images">Images</TabsTrigger>
-            <TabsTrigger value="videos">Videos</TabsTrigger>
+          <TabsList className="bg-gray-100 p-1">
+            <TabsTrigger value="all" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-400 data-[state=active]:to-yellow-500 data-[state=active]:text-black font-semibold">All Media</TabsTrigger>
+            <TabsTrigger value="images" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-400 data-[state=active]:to-yellow-500 data-[state=active]:text-black font-semibold">Images</TabsTrigger>
+            <TabsTrigger value="videos" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-400 data-[state=active]:to-yellow-500 data-[state=active]:text-black font-semibold">Videos</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -453,12 +471,12 @@ export default function MediaLibraryPage() {
             )}
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filtered.map((m) => {
               const title = m.originalName || m.name;
               const isImage = m.type === 'IMAGE';
               return (
-                <Card key={m.id} className="overflow-hidden hover:shadow-lg transition-shadow border-gray-200">
+                <Card key={m.id} className="overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105 border-gray-200 group">
                   <CardContent className="p-0">
                     <div className="relative aspect-video bg-gray-900 group">
                       {isImage ? (

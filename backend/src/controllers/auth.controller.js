@@ -109,9 +109,20 @@ exports.login = async (req, res) => {
       }
       
       // Check if Client Admin's profile is active
-      if (user.managedByClientAdmin.clientProfile && !user.managedByClientAdmin.clientProfile.isActive) {
-        console.log(`Login attempt failed: Client profile suspended - ${email}`);
-        return res.status(401).json({ message: 'Your organization license is suspended. Please contact support.' });
+      if (user.managedByClientAdmin.clientProfile) {
+        if (!user.managedByClientAdmin.clientProfile.isActive) {
+          console.log(`Login attempt failed: Client profile suspended - ${email}`);
+          return res.status(401).json({ message: 'Your organization license is suspended. Please contact support.' });
+        }
+        
+        // Check license expiry
+        if (user.managedByClientAdmin.clientProfile.licenseExpiry && 
+            new Date(user.managedByClientAdmin.clientProfile.licenseExpiry) < new Date()) {
+          console.log(`Login attempt failed: Parent license expired - ${email}`, { 
+            licenseExpiry: user.managedByClientAdmin.clientProfile.licenseExpiry 
+          });
+          return res.status(401).json({ message: 'Your organization license has expired. Please contact your administrator.' });
+        }
       }
     }
 
@@ -131,18 +142,36 @@ exports.login = async (req, res) => {
         }
 
         // Check Client Admin's profile
-        if (user.createdByUserAdmin.managedByClientAdmin.clientProfile && 
-            !user.createdByUserAdmin.managedByClientAdmin.clientProfile.isActive) {
-          console.log(`Login attempt failed: Client profile suspended (via Staff) - ${email}`);
-          return res.status(401).json({ message: 'Your organization license is suspended. Please contact support.' });
+        if (user.createdByUserAdmin.managedByClientAdmin.clientProfile) {
+          if (!user.createdByUserAdmin.managedByClientAdmin.clientProfile.isActive) {
+            console.log(`Login attempt failed: Client profile suspended (via Staff) - ${email}`);
+            return res.status(401).json({ message: 'Your organization license is suspended. Please contact support.' });
+          }
+          
+          // Check license expiry
+          if (user.createdByUserAdmin.managedByClientAdmin.clientProfile.licenseExpiry && 
+              new Date(user.createdByUserAdmin.managedByClientAdmin.clientProfile.licenseExpiry) < new Date()) {
+            console.log(`Login attempt failed: Organization license expired (via Staff) - ${email}`, { 
+              licenseExpiry: user.createdByUserAdmin.managedByClientAdmin.clientProfile.licenseExpiry 
+            });
+            return res.status(401).json({ message: 'Your organization license has expired. Please contact your administrator.' });
+          }
         }
       }
     }
 
     // Check if Client Admin's own profile is active
-    if (user.role === 'CLIENT_ADMIN' && user.clientProfile && !user.clientProfile.isActive) {
-      console.log(`Login attempt failed: Client profile suspended - ${email}`);
-      return res.status(401).json({ message: 'Your organization license is suspended. Please contact support.' });
+    if (user.role === 'CLIENT_ADMIN' && user.clientProfile) {
+      if (!user.clientProfile.isActive) {
+        console.log(`Login attempt failed: Client profile suspended - ${email}`);
+        return res.status(401).json({ message: 'Your organization license is suspended. Please contact support.' });
+      }
+      
+      // Check license expiry
+      if (user.clientProfile.licenseExpiry && new Date(user.clientProfile.licenseExpiry) < new Date()) {
+        console.log(`Login attempt failed: License expired - ${email}`, { licenseExpiry: user.clientProfile.licenseExpiry });
+        return res.status(401).json({ message: 'Your license has expired. Please renew to continue.' });
+      }
     }
 
     const isMatch = await bcrypt.compare(password, user.password);

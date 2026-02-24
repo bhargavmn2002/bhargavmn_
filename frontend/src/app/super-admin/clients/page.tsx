@@ -27,7 +27,9 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Plus, Power, Search, Edit, Trash2 } from 'lucide-react';
+import { Loader2, Plus, Power, Search, Edit, Trash2, Users, Building2 } from 'lucide-react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 type ClientProfile = {
   clientId?: string;
@@ -47,6 +49,9 @@ type ClientAdmin = {
   createdAt: string;
   clientProfile?: ClientProfile | null;
   displaysUsed?: number;
+  licenseStatus?: 'active' | 'expired' | 'suspended' | 'expiring_soon';
+  daysUntilExpiry?: number | null;
+  isExpired?: boolean;
 };
 
 function fmtDate(d?: string | null) {
@@ -113,6 +118,13 @@ export default function SuperAdminClientsPage() {
   }, [clients, searchTerm]);
 
   useEffect(() => {
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      once: true,
+      easing: 'ease-out-cubic',
+    });
+
     if (!user) return;
     if (!isSuperAdmin) {
       router.replace('/login');
@@ -302,20 +314,27 @@ export default function SuperAdminClientsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Manage Clients</h1>
-            <p className="mt-2 text-gray-600">
-              Create, manage, and suspend tenant (Client Admin) accounts. Define commercial constraints.
-            </p>
-          </div>
+      <div className="space-y-8 pb-8">
+        {/* Header Section */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-orange-500/10 rounded-3xl blur-3xl"></div>
+          <div className="relative bg-gradient-to-br from-gray-900 to-black rounded-3xl p-8 border border-gray-800 shadow-2xl">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <Users className="h-10 w-10 text-yellow-400" />
+                  <h1 className="text-4xl font-black text-white">Manage Clients</h1>
+                </div>
+                <p className="text-gray-300 text-lg">
+                  Create, manage, and suspend tenant (Client Admin) accounts. Define commercial constraints.
+                </p>
+              </div>
 
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2 signomart-primary hover:signomart-primary">
-                <Plus className="h-4 w-4" />
-                Add New Tenant
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button className="h-12 gap-2 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-bold shadow-lg hover:shadow-yellow-500/50 transition-all duration-300 hover:scale-105">
+                    <Plus className="h-5 w-5" />
+                    Add New Tenant
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[560px] bg-white border border-gray-200 shadow-lg">
@@ -423,22 +442,27 @@ export default function SuperAdminClientsPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+            </div>
+          </div>
         </div>
 
         {/* Search Bar */}
         <div className="flex items-center gap-4">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
             <Input
               placeholder="Search by Client ID, Company Name, or Email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 h-12 border-gray-300 focus:border-yellow-400 focus:ring-yellow-400"
             />
           </div>
           {searchTerm && (
-            <div className="text-sm text-gray-600">
-              {filteredClients.length} of {clients.length} clients
+            <div className="flex items-center gap-2 bg-yellow-50 px-4 py-2 rounded-xl border border-yellow-200">
+              <Building2 className="h-4 w-4 text-yellow-600" />
+              <span className="text-sm font-semibold text-yellow-900">
+                {filteredClients.length} of {clients.length} clients
+              </span>
             </div>
           )}
         </div>
@@ -476,7 +500,7 @@ export default function SuperAdminClientsPage() {
             <p className="ml-3 text-gray-600">Loading client admins…</p>
           </div>
         ) : (
-          <div className="rounded-lg border border-gray-200 bg-white">
+          <div className="rounded-2xl border border-gray-200 bg-white shadow-lg overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -496,9 +520,16 @@ export default function SuperAdminClientsPage() {
                   const maxDisplays = c.clientProfile?.maxDisplays ?? 0;
                   const displaysUsed = c.displaysUsed ?? 0;
                   const maxStorageMB = c.clientProfile?.maxStorageMB ?? 25;
-                  const licenseExpired =
-                    c.clientProfile?.licenseExpiry &&
-                    new Date(c.clientProfile.licenseExpiry) < new Date();
+                  
+                  // Determine license status badge
+                  let licenseBadge = null;
+                  if (c.licenseStatus === 'expired' || c.isExpired) {
+                    licenseBadge = <Badge variant="destructive" className="ml-2">Expired</Badge>;
+                  } else if (c.licenseStatus === 'suspended') {
+                    licenseBadge = <Badge variant="destructive" className="ml-2">Suspended</Badge>;
+                  } else if (c.licenseStatus === 'expiring_soon' && c.daysUntilExpiry !== null) {
+                    licenseBadge = <Badge className="ml-2 bg-orange-500 hover:bg-orange-600">Expires in {c.daysUntilExpiry}d</Badge>;
+                  }
 
                   return (
                     <TableRow key={c.id}>
@@ -508,11 +539,6 @@ export default function SuperAdminClientsPage() {
                       <TableCell className="font-medium">
                         <div className="flex flex-col">
                           <span>{c.clientProfile?.companyName || '—'}</span>
-                          {licenseExpired && (
-                            <span className="text-xs font-medium text-red-600">
-                              License expired
-                            </span>
-                          )}
                         </div>
                       </TableCell>
                       <TableCell>{c.email}</TableCell>
@@ -521,12 +547,19 @@ export default function SuperAdminClientsPage() {
                       </TableCell>
                       <TableCell>{c.clientProfile?.maxUsers ?? '—'}</TableCell>
                       <TableCell>{maxStorageMB}MB</TableCell>
-                      <TableCell>{fmtDate(c.clientProfile?.licenseExpiry)}</TableCell>
                       <TableCell>
-                        {c.isActive ? (
+                        <div className="flex items-center">
+                          {fmtDate(c.clientProfile?.licenseExpiry)}
+                          {licenseBadge}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {c.isActive && c.licenseStatus !== 'expired' && c.licenseStatus !== 'suspended' ? (
                           <Badge variant="success">Active</Badge>
                         ) : (
-                          <Badge variant="destructive">Suspended</Badge>
+                          <Badge variant="destructive">
+                            {c.licenseStatus === 'expired' ? 'Expired' : 'Suspended'}
+                          </Badge>
                         )}
                       </TableCell>
                       <TableCell className="text-right">

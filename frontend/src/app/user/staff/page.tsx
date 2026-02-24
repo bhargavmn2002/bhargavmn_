@@ -27,7 +27,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Trash2, Key, CheckSquare, Square } from 'lucide-react';
+import { Loader2, Plus, Trash2, Key, CheckSquare, Square, UserCog } from 'lucide-react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 type StaffUser = {
   id: string;
@@ -83,6 +85,13 @@ export default function UserStaffPage() {
   const isUserAdmin = user?.role === 'USER_ADMIN';
 
   useEffect(() => {
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      once: true,
+      easing: 'ease-out-cubic',
+    });
+
     if (!user) return;
     if (!isUserAdmin) {
       router.replace('/login');
@@ -245,40 +254,47 @@ export default function UserStaffPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Staff Users</h1>
-            <p className="mt-2 text-gray-600">
-              Manage staff accounts for content and display operations.
-            </p>
-          </div>
+      <div className="space-y-8 pb-8">
+        {/* Header Section */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-orange-500/10 rounded-3xl blur-3xl"></div>
+          <div className="relative bg-gradient-to-br from-gray-900 to-black rounded-3xl p-8 border border-gray-800 shadow-2xl">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <UserCog className="h-10 w-10 text-yellow-400" />
+                  <h1 className="text-4xl font-black text-white">Staff Users</h1>
+                </div>
+                <p className="text-gray-300 text-lg">
+                  Manage staff accounts for content and display operations.
+                </p>
+              </div>
 
-          <div className="flex items-center gap-2">
-            {selectedUsers.size > 0 && (
-              <Button
-                variant="destructive"
-                onClick={() => setBulkDeleteDialogOpen(true)}
-                className="gap-2"
-              >
-                <Trash2 className="h-4 w-4" />
-                Delete Selected ({selectedUsers.size})
-              </Button>
-            )}
-            <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2 signomart-primary hover:signomart-primary">
-                <Plus className="h-4 w-4" />
-                Add Staff
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[520px] bg-white">
-              <DialogHeader>
-                <DialogTitle>Create Staff User</DialogTitle>
-                <DialogDescription>
-                  Create a staff user with a specific operational role.
-                </DialogDescription>
-              </DialogHeader>
+              <div className="flex items-center gap-3">
+                {selectedUsers.size > 0 && (
+                  <Button
+                    variant="destructive"
+                    onClick={() => setBulkDeleteDialogOpen(true)}
+                    className="h-12 gap-2 bg-red-600 hover:bg-red-700 text-white font-bold shadow-lg"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                    Delete ({selectedUsers.size})
+                  </Button>
+                )}
+                <Dialog open={open} onOpenChange={setOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="h-12 gap-2 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-bold shadow-lg hover:shadow-yellow-500/50 transition-all duration-300 hover:scale-105">
+                      <Plus className="h-5 w-5" />
+                      Add Staff
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[520px] bg-white">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl">Create Staff User</DialogTitle>
+                      <DialogDescription className="text-base">
+                        Create a staff user with a specific operational role.
+                      </DialogDescription>
+                    </DialogHeader>
 
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
@@ -342,6 +358,8 @@ export default function UserStaffPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -506,7 +524,7 @@ export default function UserStaffPage() {
             <p className="ml-3 text-gray-600">Loading staff…</p>
           </div>
         ) : (
-          <div className="rounded-lg border border-gray-200 bg-white">
+          <div className="rounded-2xl border border-gray-200 bg-white shadow-lg overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>

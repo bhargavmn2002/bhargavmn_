@@ -13,6 +13,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Monitor, Activity, Loader2 } from 'lucide-react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 type DisplayStatus = 'ONLINE' | 'OFFLINE' | 'PAIRING' | 'ERROR';
 
@@ -54,6 +57,13 @@ export default function ClientDisplaysPage() {
     if (!isClientAdmin) return;
     
     // Initial fetch
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      once: true,
+      easing: 'ease-out-cubic',
+    });
+
     fetchDisplays(false);
     
     // Set up polling every 10 seconds for status updates
@@ -101,32 +111,45 @@ export default function ClientDisplaysPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-gray-900">Tenant Displays</h1>
-            {refreshing && (
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"></div>
-                <span>Updating status...</span>
+      <div className="space-y-8 pb-8">
+        {/* Header Section */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-orange-500/10 rounded-3xl blur-3xl"></div>
+          <div className="relative bg-gradient-to-br from-gray-900 to-black rounded-3xl p-8 border border-gray-800 shadow-2xl">
+            <div className="flex items-center gap-4 flex-wrap">
+              <Monitor className="h-10 w-10 text-yellow-400" />
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-4xl font-black text-white">Tenant Displays</h1>
+                  {refreshing && (
+                    <div className="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-xl border border-white/20">
+                      <Loader2 className="h-4 w-4 animate-spin text-yellow-400" />
+                      <span className="text-sm text-gray-300">Updating...</span>
+                    </div>
+                  )}
+                </div>
+                <p className="text-gray-300 text-lg">
+                  Read-only view of all displays across your User Admins.
+                </p>
               </div>
-            )}
+            </div>
           </div>
-          <p className="mt-2 text-gray-600">
-            Read-only view of all displays across your User Admins.
-          </p>
         </div>
 
         {error && (
-          <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
-            {error}
+          <div className="rounded-xl bg-red-50 p-4 text-sm text-red-800 border border-red-200">
+            <p className="font-semibold mb-1">Error</p>
+            <p>{error}</p>
           </div>
         )}
 
         {loading ? (
-          <div className="py-12 text-center text-gray-500">Loading displays…</div>
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            <p className="ml-3 text-gray-600">Loading displays…</p>
+          </div>
         ) : (
-          <div className="rounded-lg border border-gray-200 bg-white">
+          <div className="rounded-2xl border border-gray-200 bg-white shadow-lg overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>

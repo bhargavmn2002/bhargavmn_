@@ -86,6 +86,7 @@ exports.getConfig = async (req, res) => {
                       name: true,
                       type: true,
                       url: true,
+                      originalUrl: true,
                       duration: true,
                       mimeType: true,
                     },
@@ -112,7 +113,22 @@ exports.getConfig = async (req, res) => {
         include: {
           items: {
             orderBy: { order: 'asc' },
-            include: { media: true },
+            include: {
+              media: {
+                select: {
+                  id: true,
+                  name: true,
+                  type: true,
+                  url: true,
+                  originalUrl: true,
+                  duration: true,
+                  mimeType: true,
+                  fileSize: true,
+                  width: true,
+                  height: true,
+                },
+              },
+            },
           },
         },
       });
@@ -238,7 +254,22 @@ async function getActiveScheduleForDisplay(displayId) {
           include: {
             items: {
               orderBy: { order: 'asc' },
-              include: { media: true },
+              include: {
+                media: {
+                  select: {
+                    id: true,
+                    name: true,
+                    type: true,
+                    url: true,
+                    originalUrl: true,
+                    duration: true,
+                    mimeType: true,
+                    fileSize: true,
+                    width: true,
+                    height: true,
+                  },
+                },
+              },
             },
           },
         },

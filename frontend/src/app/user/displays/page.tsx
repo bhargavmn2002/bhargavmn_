@@ -23,8 +23,10 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Edit, Trash2, Loader2, Calendar } from 'lucide-react';
+import { Plus, Edit, Trash2, Loader2, Calendar, Monitor, Activity } from 'lucide-react';
 import api from '@/lib/api';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 interface Playlist {
   id: string;
@@ -96,6 +98,13 @@ export default function DisplaysPage() {
   const canAssign = user?.role === 'USER_ADMIN';
 
   useEffect(() => {
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      once: true,
+      easing: 'ease-out-cubic',
+    });
+
     if (hasAccess) {
       // Initial fetch
       fetchDisplays(false);
@@ -440,75 +449,82 @@ export default function DisplaysPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-gray-900">Display Management</h1>
-              {refreshing && (
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Updating status...</span>
-                </div>
-              )}
-            </div>
-            <div className="mt-2 flex items-center gap-4">
-              <p className="text-gray-600">Manage and monitor your displays</p>
-              {displayLimits && (
-                <div className="flex items-center gap-2">
-                  <div className={`rounded-full px-3 py-1 text-sm font-medium ${
-                    displayLimits.currentCount >= displayLimits.maxDisplays 
-                      ? 'bg-red-100 text-red-800' 
-                      : displayLimits.currentCount >= displayLimits.maxDisplays * 0.8
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-green-100 text-green-800'
-                  }`}>
-                    {displayLimits.currentCount} / {displayLimits.maxDisplays} displays
-                  </div>
-                  {displayLimits.currentCount >= displayLimits.maxDisplays && (
-                    <span className="text-sm text-red-600 font-medium">
-                      Display limit reached
-                    </span>
+      <div className="space-y-8 pb-8">
+        {/* Header Section */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-orange-500/10 rounded-3xl blur-3xl"></div>
+          <div className="relative bg-gradient-to-br from-gray-900 to-black rounded-3xl p-8 border border-gray-800 shadow-2xl">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <Monitor className="h-10 w-10 text-yellow-400" />
+                  <h1 className="text-4xl font-black text-white">Display Management</h1>
+                  {refreshing && (
+                    <div className="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-xl border border-white/20">
+                      <Loader2 className="h-4 w-4 animate-spin text-yellow-400" />
+                      <span className="text-sm text-gray-300">Updating...</span>
+                    </div>
                   )}
                 </div>
-              )}
-            </div>
-          </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                disabled={
-                  !!displayLimits &&
-                  displayLimits.currentCount >= displayLimits.maxDisplays
-                }
-                className="signomart-primary hover:signomart-primary"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Add Display
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] bg-white">
-              <DialogHeader>
-                <DialogTitle>Pair New Display</DialogTitle>
-                <DialogDescription>
-                  Enter the 6-digit pairing code from your display device.
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handlePairDisplay}>
-                <div className="grid gap-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="pairingCode">Pairing Code</Label>
-                    <Input
-                      id="pairingCode"
-                      placeholder="123456"
-                      value={pairingCode}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-                        setPairingCode(value);
-                        setError('');
-                      }}
-                      maxLength={6}
-                      required
+                <div className="flex items-center gap-4 flex-wrap">
+                  <p className="text-gray-300 text-lg">Manage and monitor your displays</p>
+                  {displayLimits && (
+                    <div className="flex items-center gap-2">
+                      <div className={`rounded-xl px-4 py-2 text-sm font-bold shadow-lg ${
+                        displayLimits.currentCount >= displayLimits.maxDisplays 
+                          ? 'bg-red-500 text-white' 
+                          : displayLimits.currentCount >= displayLimits.maxDisplays * 0.8
+                          ? 'bg-yellow-400 text-black'
+                          : 'bg-green-500 text-white'
+                      }`}>
+                        <Activity className="inline h-4 w-4 mr-2" />
+                        {displayLimits.currentCount} / {displayLimits.maxDisplays} displays
+                      </div>
+                      {displayLimits.currentCount >= displayLimits.maxDisplays && (
+                        <span className="text-sm text-red-400 font-semibold bg-red-500/20 px-3 py-1 rounded-lg">
+                          Limit reached
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button 
+                    disabled={
+                      !!displayLimits &&
+                      displayLimits.currentCount >= displayLimits.maxDisplays
+                    }
+                    className="h-12 gap-2 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-bold shadow-lg hover:shadow-yellow-500/50 transition-all duration-300 hover:scale-105"
+                  >
+                    <Plus className="h-5 w-5" />
+                    Add Display
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] bg-white">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl">Pair New Display</DialogTitle>
+                    <DialogDescription className="text-base">
+                      Enter the 6-digit pairing code from your display device.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handlePairDisplay}>
+                    <div className="grid gap-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="pairingCode" className="text-sm font-semibold">Pairing Code</Label>
+                        <Input
+                          id="pairingCode"
+                          placeholder="123456"
+                          value={pairingCode}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                            setPairingCode(value);
+                            setError('');
+                          }}
+                          maxLength={6}
+                          required
+                          className="h-12 text-center text-2xl font-bold tracking-widest"
                       disabled={pairingLoading}
                     />
                     <p className="text-xs text-gray-500">
@@ -563,6 +579,8 @@ export default function DisplaysPage() {
               </form>
             </DialogContent>
           </Dialog>
+            </div>
+          </div>
         </div>
 
         {loading ? (
@@ -578,7 +596,7 @@ export default function DisplaysPage() {
             </p>
           </div>
         ) : (
-          <div className="rounded-lg border border-gray-200 bg-white">
+          <div className="rounded-2xl border border-gray-200 bg-white shadow-lg overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>

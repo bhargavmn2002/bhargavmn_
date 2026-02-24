@@ -20,9 +20,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Loader2, Monitor, Play, Clock, FileText } from 'lucide-react';
+import { Loader2, Monitor, Play, Clock, FileText, Activity } from 'lucide-react';
 import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 interface MediaItem {
   id: string;
@@ -72,6 +74,11 @@ export default function ProofOfPlayPage() {
   const isPOPManager = user?.role === 'STAFF' && user?.staffRole === 'POP_MANAGER';
 
   useEffect(() => {
+    AOS.init({
+      duration: 800,
+      once: true,
+      easing: 'ease-out-cubic',
+    });
     if (!user) return;
     if (!isPOPManager) {
       router.replace('/staff/dashboard');
@@ -137,14 +144,26 @@ export default function ProofOfPlayPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Proof of Play</h1>
-          <p className="mt-2 text-gray-600">Track display activity and content playback</p>
+        {/* Header with gradient background */}
+        <div 
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black p-8 shadow-2xl"
+          data-aos="fade-down"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-orange-500/10"></div>
+          <div className="relative flex items-center gap-4">
+            <div className="rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 p-3 shadow-lg">
+              <Activity className="h-10 w-10 text-white" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-white">Proof of Play</h1>
+              <p className="mt-2 text-gray-300">Track display activity and content playback</p>
+            </div>
+          </div>
         </div>
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          <Card>
+          <Card className="rounded-2xl shadow-lg" data-aos="fade-up" data-aos-delay="100">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">Total Displays</CardTitle>
             </CardHeader>
@@ -152,7 +171,7 @@ export default function ProofOfPlayPage() {
               <div className="text-2xl font-bold">{proofOfPlay.length}</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="rounded-2xl shadow-lg" data-aos="fade-up" data-aos-delay="200">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">Online</CardTitle>
             </CardHeader>
@@ -160,7 +179,7 @@ export default function ProofOfPlayPage() {
               <div className="text-2xl font-bold text-green-600">{onlineCount}</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="rounded-2xl shadow-lg" data-aos="fade-up" data-aos-delay="300">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">Offline</CardTitle>
             </CardHeader>
@@ -168,7 +187,7 @@ export default function ProofOfPlayPage() {
               <div className="text-2xl font-bold text-red-600">{offlineCount}</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="rounded-2xl shadow-lg" data-aos="fade-up" data-aos-delay="400">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">Total Media Items</CardTitle>
             </CardHeader>
@@ -179,7 +198,10 @@ export default function ProofOfPlayPage() {
         </div>
 
         {error && (
-          <div className="rounded-lg bg-red-50 p-4 text-red-800">
+          <div 
+            className="rounded-2xl bg-red-50 p-4 text-red-800 shadow-lg"
+            data-aos="fade-up"
+          >
             {error}
           </div>
         )}
@@ -190,7 +212,11 @@ export default function ProofOfPlayPage() {
             <p className="ml-3 text-gray-600">Loading proof of play data…</p>
           </div>
         ) : (
-          <div className="rounded-lg border border-gray-200 bg-white">
+          <div 
+            className="rounded-2xl border border-gray-200 bg-white shadow-lg"
+            data-aos="fade-up"
+            data-aos-delay="500"
+          >
             <Table>
               <TableHeader>
                 <TableRow>

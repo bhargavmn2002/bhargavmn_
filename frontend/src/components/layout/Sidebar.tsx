@@ -182,15 +182,24 @@ export function Sidebar({ user }: SidebarProps) {
 
   return (
     <aside className="flex w-64 flex-col bg-white shadow-lg border-r border-gray-200">
-      <div className="flex h-20 items-center justify-center border-b border-gray-200 px-4 signomart-bg">
-        <div className="flex items-center gap-1">
-          <h1 className="text-xl font-bold signomart-text">SIGN</h1>
+      <div className="flex h-20 items-center justify-center border-b border-gray-200 px-4 bg-white">
+        <div className="flex items-center gap-3">
           <img 
-            src="/signomart-logo.png" 
-            alt="O" 
-            className="h-8 w-8 bg-white p-0.5 rounded inline-block"
+            src="/signomart-full-logo.png" 
+            alt="Signomart" 
+            className="h-12 w-12 object-contain"
           />
-          <h1 className="text-xl font-bold signomart-text">MART</h1>
+          <div className="flex flex-col gap-0.5">
+            <div className="flex items-center gap-0">
+              <span className="text-2xl font-bold text-gray-700" style={{ fontFamily: 'Arial, sans-serif', letterSpacing: '-0.5px' }}>SIGN</span>
+              <span className="text-2xl font-bold text-yellow-400" style={{ fontFamily: 'Arial, sans-serif', letterSpacing: '-0.5px' }}>O</span>
+              <span className="text-2xl font-bold text-gray-700" style={{ fontFamily: 'Arial, sans-serif', letterSpacing: '-0.5px' }}>X</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-0.5 w-12 bg-yellow-400"></div>
+              <span className="text-[10px] text-gray-600 italic whitespace-nowrap">Digital Signage</span>
+            </div>
+          </div>
         </div>
       </div>
 

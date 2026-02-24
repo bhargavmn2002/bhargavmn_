@@ -6,10 +6,12 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Image as ImageIcon, Video, HardDrive } from 'lucide-react';
+import { Loader2, Image as ImageIcon, Video, HardDrive, FolderOpen } from 'lucide-react';
 import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { StorageIndicator } from '@/components/ui/storage-indicator';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 type Media = {
   id: string;
@@ -44,6 +46,11 @@ export default function StaffMediaPage() {
   const isCMSViewer = user?.role === 'STAFF' && user?.staffRole === 'CMS_VIEWER';
 
   useEffect(() => {
+    AOS.init({
+      duration: 800,
+      once: true,
+      easing: 'ease-out-cubic',
+    });
     if (!user) return;
     if (!isCMSViewer) {
       router.replace('/staff/dashboard');
@@ -116,23 +123,37 @@ export default function StaffMediaPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">View Media Library</h1>
-            <p className="mt-2 text-gray-600">Browse media files in your organization (read-only)</p>
-          </div>
-
-          {storageInfo && (
-            <Card className="w-full sm:w-80">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <HardDrive className="h-4 w-4 text-gray-600" />
-                  <span className="text-sm font-medium text-gray-700">Storage Usage</span>
+        {/* Header with gradient background */}
+        <div 
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black p-8 shadow-2xl"
+          data-aos="fade-down"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-orange-500/10"></div>
+          <div className="relative">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex items-center gap-4">
+                <div className="rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 p-3 shadow-lg">
+                  <FolderOpen className="h-10 w-10 text-white" />
                 </div>
-                <StorageIndicator storageInfo={storageInfo} />
-              </CardContent>
-            </Card>
-          )}
+                <div>
+                  <h1 className="text-4xl font-bold text-white">View Media Library</h1>
+                  <p className="mt-2 text-gray-300">Browse media files in your organization (read-only)</p>
+                </div>
+              </div>
+
+              {storageInfo && (
+                <Card className="w-full sm:w-80 bg-white/10 backdrop-blur-sm border-white/20">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <HardDrive className="h-4 w-4 text-gray-300" />
+                      <span className="text-sm font-medium text-gray-200">Storage Usage</span>
+                    </div>
+                    <StorageIndicator storageInfo={storageInfo} />
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
         </div>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
@@ -153,13 +174,21 @@ export default function StaffMediaPage() {
             <p className="ml-3 text-gray-600">Loading media…</p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
+          <div 
+            className="rounded-2xl border border-gray-200 bg-white p-12 text-center shadow-lg"
+            data-aos="fade-up"
+          >
             <p className="text-gray-500">No media files found.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-            {filtered.map((item) => (
-              <Card key={item.id} className="overflow-hidden">
+            {filtered.map((item, index) => (
+              <Card 
+                key={item.id} 
+                className="overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-shadow"
+                data-aos="fade-up"
+                data-aos-delay={Math.min(index * 50, 500)}
+              >
                 <CardContent className="p-0">
                   <div className="relative aspect-video bg-gray-100">
                     {item.type === 'IMAGE' ? (

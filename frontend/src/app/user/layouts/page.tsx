@@ -26,10 +26,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Trash2, Pencil, Layout, Monitor, Eye } from 'lucide-react';
+import { Loader2, Plus, Trash2, Pencil, Layout, Monitor, Eye, Layers } from 'lucide-react';
 import { LayoutTemplateSelector, LayoutTemplate, LAYOUT_TEMPLATES } from '@/components/layout/LayoutTemplateSelector';
 import { AdvancedLayoutEditor } from '@/components/layout/AdvancedLayoutEditor';
 import { LayoutPreview } from '@/components/layout/LayoutPreview';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 type Layout = {
   id: string;
@@ -74,6 +76,11 @@ export default function LayoutsPage() {
   }, [user]);
 
   useEffect(() => {
+    AOS.init({
+      duration: 800,
+      once: true,
+      easing: 'ease-out-cubic',
+    });
     if (!user) return;
     if (access.canRead) fetchLayouts();
   }, [user, access.canRead]);
@@ -253,130 +260,153 @@ export default function LayoutsPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Layouts</h1>
-            <p className="text-gray-600 mt-1">
-              Create and manage display layouts with widgets and zones
-            </p>
-          </div>
-          {access.canWrite && (
-            <>
-              {selectedIds.size > 0 && (
-                <Button
-                  variant="destructive"
-                  onClick={deleteSelected}
-                  disabled={deleting}
-                  className="mr-2"
-                >
-                  {deleting ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Trash2 className="h-4 w-4 mr-2" />
-                  )}
-                  Delete selected ({selectedIds.size})
-                </Button>
-              )}
-              <Button onClick={() => setTemplateSelectorOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Layout
-              </Button>
-              <LayoutTemplateSelector
-                open={templateSelectorOpen}
-                onOpenChange={setTemplateSelectorOpen}
-                onSelectTemplate={handleTemplateSelect}
-              />
-              <AdvancedLayoutEditor
-                open={advancedEditorOpen}
-                onOpenChange={setAdvancedEditorOpen}
-                onNext={handleAdvancedEditorNext}
-              />
-              <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-              <DialogContent className="sm:max-w-[500px]">
-                <DialogHeader>
-                  <DialogTitle>Create New Layout</DialogTitle>
-                  <DialogDescription>
-                    Create a new layout template for your displays
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Layout Name *</Label>
-                    <Input
-                      id="name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g., Main Screen Layout"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Input
-                      id="description"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Optional description"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="width">Width (px)</Label>
-                      <Input
-                        id="width"
-                        type="number"
-                        value={width}
-                        onChange={(e) => setWidth(Number(e.target.value))}
-                        min="320"
-                        max="7680"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="height">Height (px)</Label>
-                      <Input
-                        id="height"
-                        type="number"
-                        value={height}
-                        onChange={(e) => setHeight(Number(e.target.value))}
-                        min="240"
-                        max="4320"
-                      />
-                    </div>
-                  </div>
-                  {error && (
-                    <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
-                      {error}
-                    </div>
-                  )}
+        {/* Header with gradient background */}
+        <div 
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black p-8 shadow-2xl"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-orange-500/10"></div>
+          <div className="relative">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 p-3 shadow-lg">
+                  <Layers className="h-10 w-10 text-white" />
                 </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setCreateOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={createLayout} disabled={creating}>
-                    {creating ? (
-                      <>
+                <div>
+                  <h1 className="text-4xl font-bold text-white">Layouts</h1>
+                  <p className="text-gray-300 mt-1">
+                    Create and manage display layouts with widgets and zones
+                  </p>
+                </div>
+              </div>
+              {access.canWrite && (
+                <div className="flex gap-2">
+                  {selectedIds.size > 0 && (
+                    <Button
+                      variant="destructive"
+                      onClick={deleteSelected}
+                      disabled={deleting}
+                      className="h-12"
+                    >
+                      {deleting ? (
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Creating...
-                      </>
-                    ) : (
-                      'Create'
-                    )}
+                      ) : (
+                        <Trash2 className="h-4 w-4 mr-2" />
+                      )}
+                      Delete selected ({selectedIds.size})
+                    </Button>
+                  )}
+                  <Button 
+                    onClick={() => setTemplateSelectorOpen(true)}
+                    className="h-12 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-gray-900 font-semibold"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Layout
                   </Button>
-                </DialogFooter>
-              </DialogContent>
-              </Dialog>
-            </>
-          )}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
+        <LayoutTemplateSelector
+          open={templateSelectorOpen}
+          onOpenChange={setTemplateSelectorOpen}
+          onSelectTemplate={handleTemplateSelect}
+        />
+        
+        <AdvancedLayoutEditor
+          open={advancedEditorOpen}
+          onOpenChange={setAdvancedEditorOpen}
+          onNext={handleAdvancedEditorNext}
+        />
+        
+        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Create New Layout</DialogTitle>
+              <DialogDescription>
+                Create a new layout template for your displays
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Layout Name *</Label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g., Main Screen Layout"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Input
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Optional description"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="width">Width (px)</Label>
+                  <Input
+                    id="width"
+                    type="number"
+                    value={width}
+                    onChange={(e) => setWidth(Number(e.target.value))}
+                    min="320"
+                    max="7680"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="height">Height (px)</Label>
+                  <Input
+                    id="height"
+                    type="number"
+                    value={height}
+                    onChange={(e) => setHeight(Number(e.target.value))}
+                    min="240"
+                    max="4320"
+                  />
+                </div>
+              </div>
+              {error && (
+                <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                  {error}
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setCreateOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={createLayout} disabled={creating}>
+                {creating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Create'
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          <div 
+            className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl shadow-lg"
+          >
             {error}
           </div>
         )}
 
         {layouts.length === 0 ? (
-          <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <div 
+            className="text-center py-12 bg-white rounded-2xl shadow-lg"
+          >
             <Layout className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No layouts yet</h3>
             <p className="text-gray-600 mb-4">
@@ -402,7 +432,9 @@ export default function LayoutsPage() {
             />
           </div>
         ) : (
-          <div className="bg-white rounded-lg border border-gray-200">
+          <div 
+            className="bg-white rounded-2xl border border-gray-200 shadow-lg"
+          >
             <Table>
               <TableHeader>
                 <TableRow>

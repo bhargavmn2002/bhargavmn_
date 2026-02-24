@@ -26,7 +26,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Trash2, Pencil, Music, Clock } from 'lucide-react';
+import { Loader2, Plus, Trash2, Pencil, Music, Clock, ListMusic } from 'lucide-react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 type Playlist = {
   id: string;
@@ -62,6 +64,13 @@ export default function PlaylistsPage() {
   }, [user]);
 
   useEffect(() => {
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      once: true,
+      easing: 'ease-out-cubic',
+    });
+
     if (!user) return;
     if (user.role === 'STAFF' && user.staffRole === 'DISPLAY_MANAGER') {
       router.replace('/user/dashboard');
@@ -184,45 +193,51 @@ export default function PlaylistsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Playlists</h1>
-            <p className="mt-2 text-sm text-gray-600">Create and manage your content playlists</p>
-          </div>
+      <div className="space-y-8 pb-8">
+        {/* Header Section */}
+        <div className="relative" data-aos="fade-down">
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-orange-500/10 rounded-3xl blur-3xl"></div>
+          <div className="relative bg-gradient-to-br from-gray-900 to-black rounded-3xl p-8 border border-gray-800 shadow-2xl">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <ListMusic className="h-10 w-10 text-yellow-400" />
+                  <h1 className="text-4xl font-black text-white">Playlists</h1>
+                </div>
+                <p className="text-gray-300 text-lg">Create and manage your content playlists</p>
+              </div>
 
-          <div className="flex items-center gap-2">
-            {access.canWrite && selectedIds.size > 0 && (
-              <Button
-                variant="destructive"
-                onClick={deleteSelected}
-                disabled={deleting}
-                className="gap-2"
-              >
-                {deleting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Trash2 className="h-4 w-4" />
+              <div className="flex items-center gap-3">
+                {access.canWrite && selectedIds.size > 0 && (
+                  <Button
+                    variant="destructive"
+                    onClick={deleteSelected}
+                    disabled={deleting}
+                    className="h-12 gap-2 bg-red-600 hover:bg-red-700 text-white font-bold shadow-lg"
+                  >
+                    {deleting ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-5 w-5" />
+                    )}
+                    Delete ({selectedIds.size})
+                  </Button>
                 )}
-                Delete selected ({selectedIds.size})
-              </Button>
-            )}
-            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+                <Dialog open={createOpen} onOpenChange={setCreateOpen}>
               <DialogTrigger asChild>
-                <Button disabled={!access.canWrite} className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Create New
+                <Button disabled={!access.canWrite} className="h-12 gap-2 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-bold shadow-lg hover:shadow-yellow-500/50 transition-all duration-300 hover:scale-105">
+                  <Plus className="h-5 w-5" />
+                  Create Playlist
                 </Button>
               </DialogTrigger>
-            <DialogContent className="sm:max-w-[420px]">
-              <DialogHeader>
-                <DialogTitle>Create New Playlist</DialogTitle>
-                <DialogDescription>Enter a name for your new playlist.</DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-3 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="playlistName">Name</Label>
+              <DialogContent className="sm:max-w-[420px] bg-white">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl">Create New Playlist</DialogTitle>
+                  <DialogDescription className="text-base">Enter a name for your new playlist.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="playlistName" className="text-sm font-semibold">Playlist Name</Label>
                   <Input
                     id="playlistName"
                     value={name}
@@ -259,6 +274,8 @@ export default function PlaylistsPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+              </div>
+            </div>
           </div>
         </div>
 

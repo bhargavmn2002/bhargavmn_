@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Loader2, Save, ArrowLeft, Plus, X, Pencil, Search, Upload, Image as ImageIcon, Video, Clock, HardDrive, Trash2, GripVertical, Play, FileVideo, RefreshCw } from 'lucide-react';
+import { Loader2, Save, ArrowLeft, Plus, X, Pencil, Search, Upload, Image as ImageIcon, Video, Clock, HardDrive, Trash2, GripVertical, Play, FileVideo, RefreshCw, Layers } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import {
   DndContext,
@@ -33,6 +33,8 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { LayoutPreview } from '@/components/layout/LayoutPreview';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
@@ -478,6 +480,11 @@ export default function LayoutBuilderPage() {
   );
 
   useEffect(() => {
+    AOS.init({
+      duration: 800,
+      once: true,
+      easing: 'ease-out-cubic',
+    });
     if (layoutId) {
       fetchLayout();
       fetchMedia();
@@ -797,7 +804,8 @@ export default function LayoutBuilderPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+          <Loader2 className="h-8 w-8 animate-spin text-yellow-500" />
+          <p className="ml-3 text-gray-600 font-medium">Loading layout...</p>
         </div>
       </DashboardLayout>
     );
@@ -807,8 +815,12 @@ export default function LayoutBuilderPage() {
     return (
       <DashboardLayout>
         <div className="text-center py-12">
-          <p className="text-gray-600">Layout not found</p>
-          <Button onClick={() => router.push('/user/layouts')} className="mt-4">
+          <p className="text-gray-600 font-semibold mb-4">Layout not found</p>
+          <Button 
+            onClick={() => router.push('/user/layouts')} 
+            className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-gray-900 font-semibold"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Layouts
           </Button>
         </div>
@@ -825,94 +837,117 @@ export default function LayoutBuilderPage() {
     <div className="flex h-[calc(100vh-12rem)] -m-6 -mx-6">
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden bg-white">
-        {/* Header */}
-        <div className="border-b bg-white p-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" onClick={() => router.push('/user/layouts')}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
-              </Button>
-              <div className="flex items-center gap-2">
-                {editingName ? (
-                  <Input
-                    value={layoutName}
-                    onChange={(e) => setLayoutName(e.target.value)}
-                    onBlur={() => {
-                      setEditingName(false);
-                      saveLayout();
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
+        {/* Header with gradient background */}
+        <div 
+          className="relative overflow-hidden bg-gradient-to-br from-gray-900 to-black p-6 shadow-2xl"
+          data-aos="fade-down"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-orange-500/10"></div>
+          <div className="relative">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-4">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => router.push('/user/layouts')}
+                  className="text-gray-300 hover:text-white hover:bg-white/10"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
+                <div className="rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 p-2 shadow-lg">
+                  <Layers className="h-8 w-8 text-white" />
+                </div>
+                <div className="flex items-center gap-2">
+                  {editingName ? (
+                    <Input
+                      value={layoutName}
+                      onChange={(e) => setLayoutName(e.target.value)}
+                      onBlur={() => {
                         setEditingName(false);
                         saveLayout();
-                      }
-                      if (e.key === 'Escape') {
-                        setEditingName(false);
-                        setLayoutName(layout.name);
-                      }
-                    }}
-                    className="text-xl font-bold border-0 border-b-2 focus:border-blue-500"
-                    autoFocus
-                  />
-                ) : (
-                  <>
-                    <h1 className="text-xl font-bold">{layoutName}</h1>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setEditingName(true)}
-                      className="h-6 w-6 p-0"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </>
-                )}
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          setEditingName(false);
+                          saveLayout();
+                        }
+                        if (e.key === 'Escape') {
+                          setEditingName(false);
+                          setLayoutName(layout.name);
+                        }
+                      }}
+                      className="text-2xl font-bold border-0 bg-white/10 text-white focus:bg-white/20 focus:border-yellow-400"
+                      autoFocus
+                    />
+                  ) : (
+                    <>
+                      <h1 className="text-3xl font-bold text-white">{layoutName}</h1>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditingName(true)}
+                        className="h-8 w-8 p-0 text-gray-300 hover:text-white hover:bg-white/10"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={saveAndLivePreview}
+                  disabled={saving}
+                  className="h-12 bg-white/10 text-white border-white/20 hover:bg-white/20"
+                >
+                  <Play className="h-4 w-4 mr-2" />
+                  Live Preview
+                </Button>
+                <Button 
+                  onClick={saveLayout} 
+                  disabled={saving}
+                  className="h-12 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-gray-900 font-semibold shadow-lg"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      SAVE
+                    </>
+                  )}
+                </Button>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                onClick={saveAndLivePreview}
-                disabled={saving}
-              >
-                <Play className="h-4 w-4 mr-2" />
-                Live Preview
-              </Button>
-              <Button onClick={saveLayout} disabled={saving}>
-                {saving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    SAVE
-                  </>
-                )}
-              </Button>
-            </div>
+
+            {/* Section Tabs */}
+            <Tabs value={activeSection || ''} onValueChange={setActiveSection}>
+              <div className="overflow-x-auto overflow-y-hidden custom-scrollbar-horizontal -mx-4 px-4 pb-1">
+                <TabsList className="inline-flex w-max min-w-full bg-white/10 border-white/20">
+                  {layout.sections.map((section) => (
+                    <TabsTrigger 
+                      key={section.id} 
+                      value={section.id} 
+                      className="whitespace-nowrap flex-shrink-0 data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-400 data-[state=active]:to-yellow-500 data-[state=active]:text-gray-900"
+                    >
+                      {section.name}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </div>
+            </Tabs>
+
+            {error && (
+              <div className="mt-4 rounded-xl bg-red-500/20 border border-red-500/30 p-3 text-sm text-red-200 shadow-lg">
+                {error}
+              </div>
+            )}
           </div>
-
-          {/* Section Tabs */}
-          <Tabs value={activeSection || ''} onValueChange={setActiveSection}>
-            <div className="overflow-x-auto overflow-y-hidden custom-scrollbar-horizontal -mx-4 px-4 pb-1">
-              <TabsList className="inline-flex w-max min-w-full">
-                {layout.sections.map((section) => (
-                  <TabsTrigger key={section.id} value={section.id} className="whitespace-nowrap flex-shrink-0">
-                    {section.name}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </div>
-          </Tabs>
-
-          {error && (
-            <div className="mt-4 rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-800">
-              {error}
-            </div>
-          )}
         </div>
 
         {/* Section Content */}
@@ -921,32 +956,40 @@ export default function LayoutBuilderPage() {
             <div className="max-w-6xl mx-auto space-y-6">
               {/* Section Statistics */}
               {sectionStats && (
-                <div className="grid grid-cols-4 gap-4">
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <p className="text-xs text-gray-600 uppercase mb-1">TOTAL MEDIA</p>
-                    <p className="text-2xl font-bold text-gray-900">{sectionStats.totalMedia}</p>
+                <div 
+                  className="grid grid-cols-4 gap-4"
+                  data-aos="fade-up"
+                  data-aos-delay="100"
+                >
+                  <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
+                    <p className="text-xs text-gray-600 uppercase mb-1 font-semibold">TOTAL MEDIA</p>
+                    <p className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">{sectionStats.totalMedia}</p>
                   </div>
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <p className="text-xs text-gray-600 uppercase mb-1">DURATION</p>
+                  <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
+                    <p className="text-xs text-gray-600 uppercase mb-1 font-semibold">DURATION</p>
                     <p className="text-2xl font-bold text-gray-900">{sectionStats.totalDuration} sec</p>
                   </div>
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <p className="text-xs text-gray-600 uppercase mb-1">TOTAL SIZE</p>
+                  <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
+                    <p className="text-xs text-gray-600 uppercase mb-1 font-semibold">TOTAL SIZE</p>
                     <p className="text-2xl font-bold text-gray-900">
                       {sectionStats.totalSize > 0 
                         ? `${(sectionStats.totalSize / 1024 / 1024).toFixed(2)} MB`
                         : '0 Bytes'}
                     </p>
                   </div>
-                  <div className="bg-white p-4 rounded-lg border border-gray-200">
-                    <p className="text-xs text-gray-600 uppercase mb-1">FREQUENCY</p>
+                  <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-lg hover:shadow-xl transition-shadow">
+                    <p className="text-xs text-gray-600 uppercase mb-1 font-semibold">FREQUENCY</p>
                     <p className="text-2xl font-bold text-gray-900">{sectionStats.frequency} times / Hour</p>
                   </div>
                 </div>
               )}
 
               {/* Layout Preview */}
-              <div className="bg-white p-6 rounded-lg border border-gray-200">
+              <div 
+                className="bg-white p-6 rounded-2xl border border-gray-200 shadow-lg"
+                data-aos="fade-up"
+                data-aos-delay="200"
+              >
                 <h3 className="text-sm font-semibold text-gray-700 mb-4">Layout Preview</h3>
                 <div className="flex justify-center">
                   <div className="relative bg-gray-100 border-2 border-gray-300 rounded overflow-hidden" style={{ width: `${previewWidth}px`, height: `${previewHeight}px` }}>
@@ -983,7 +1026,11 @@ export default function LayoutBuilderPage() {
               </div>
 
               {/* Media Drop Zone */}
-              <div className="bg-white border-2 border-dashed border-gray-300 rounded-lg p-6 min-h-[300px] max-h-[500px] overflow-y-auto overflow-x-hidden custom-scrollbar">
+              <div 
+                className="bg-white border-2 border-dashed border-gray-300 rounded-2xl p-6 min-h-[300px] max-h-[500px] overflow-y-auto overflow-x-hidden custom-scrollbar shadow-lg"
+                data-aos="fade-up"
+                data-aos-delay="300"
+              >
                 {currentSection.items.length === 0 ? (
                   <div className="flex items-center justify-center h-full text-gray-400 min-h-[200px]">
                     <div className="text-center">
@@ -1018,10 +1065,10 @@ export default function LayoutBuilderPage() {
       </div>
 
       {/* Media Library Sidebar */}
-      <div className="w-80 border-l bg-white flex flex-col">
-        <div className="p-4 border-b">
+      <div className="w-80 border-l bg-gradient-to-b from-gray-50 to-white flex flex-col shadow-xl">
+        <div className="p-4 border-b bg-white">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-gray-900">MEDIA LIBRARY</h2>
+            <h2 className="font-bold text-gray-900 text-lg">MEDIA LIBRARY</h2>
             <Button
               variant="ghost"
               size="sm"
@@ -1030,7 +1077,7 @@ export default function LayoutBuilderPage() {
               className="h-8 w-8 p-0"
               title="Refresh media list"
             >
-              <RefreshCw className={`h-4 w-4 ${refreshingMedia ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-4 w-4 ${refreshingMedia ? 'animate-spin text-yellow-500' : 'text-gray-600'}`} />
             </Button>
           </div>
           
@@ -1047,7 +1094,7 @@ export default function LayoutBuilderPage() {
 
           {/* Upload Button */}
           <Button 
-            className="w-full mb-3 bg-blue-600 hover:bg-blue-700"
+            className="w-full mb-3 h-11 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-gray-900 font-semibold shadow-lg"
             onClick={() => router.push('/user/media')}
           >
             <Upload className="h-4 w-4 mr-2" />

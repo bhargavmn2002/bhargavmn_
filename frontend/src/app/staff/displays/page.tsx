@@ -19,9 +19,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Loader2, Eye } from 'lucide-react';
+import { Loader2, Eye, Monitor, Activity } from 'lucide-react';
 import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 interface Playlist {
   id: string;
@@ -61,6 +63,13 @@ export default function StaffDisplaysPage() {
   const isCMSViewer = user?.role === 'STAFF' && user?.staffRole === 'CMS_VIEWER';
 
   useEffect(() => {
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      once: true,
+      easing: 'ease-out-cubic',
+    });
+
     if (!user) return;
     if (!isCMSViewer) {
       router.replace('/staff/dashboard');
@@ -140,35 +149,43 @@ export default function StaffDisplaysPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-gray-900">View Displays</h1>
-              {refreshing && (
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Updating status...</span>
+      <div className="space-y-8 pb-8">
+        {/* Header Section */}
+        <div className="relative" data-aos="fade-down">
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-orange-500/10 rounded-3xl blur-3xl"></div>
+          <div className="relative bg-gradient-to-br from-gray-900 to-black rounded-3xl p-8 border border-gray-800 shadow-2xl">
+            <div className="flex items-center gap-4 flex-wrap">
+              <Monitor className="h-10 w-10 text-yellow-400" />
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-4xl font-black text-white">View Displays</h1>
+                  {refreshing && (
+                    <div className="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-xl border border-white/20">
+                      <Loader2 className="h-4 w-4 animate-spin text-yellow-400" />
+                      <span className="text-sm text-gray-300">Updating...</span>
+                    </div>
+                  )}
                 </div>
-              )}
+                <p className="text-gray-300 text-lg">View displays in your organization (read-only)</p>
+              </div>
             </div>
-            <p className="mt-2 text-gray-600">View displays in your organization (read-only)</p>
           </div>
         </div>
 
         {error && (
-          <div className="rounded-lg bg-red-50 p-4 text-red-800">
-            {error}
+          <div className="rounded-xl bg-red-50 p-4 text-red-800 border border-red-200" data-aos="fade-up">
+            <p className="font-semibold mb-1">Error</p>
+            <p>{error}</p>
           </div>
         )}
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex items-center justify-center py-12" data-aos="fade-up">
             <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
             <p className="ml-3 text-gray-600">Loading displays…</p>
           </div>
         ) : (
-          <div className="rounded-lg border border-gray-200 bg-white">
+          <div className="rounded-2xl border border-gray-200 bg-white shadow-lg overflow-hidden" data-aos="fade-up" data-aos-delay="100">
             <Table>
               <TableHeader>
                 <TableRow>

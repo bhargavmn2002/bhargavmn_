@@ -124,11 +124,38 @@ exports.listClientAdmins = async (req, res) => {
       include: { clientProfile: true },
     });
 
+    const now = new Date();
+
     const withUsage = await Promise.all(
       users.map(async (u) => {
         const displaysUsed = await prisma.display.count({
           where: { clientAdminId: u.id },
         });
+
+        // Calculate license status
+        let licenseStatus = 'active';
+        let daysUntilExpiry = null;
+        let isExpired = false;
+
+        if (u.clientProfile) {
+          // Check if profile is inactive
+          if (!u.clientProfile.isActive) {
+            licenseStatus = 'suspended';
+          } 
+          // Check if license has expired
+          else if (u.clientProfile.licenseExpiry) {
+            const expiryDate = new Date(u.clientProfile.licenseExpiry);
+            isExpired = expiryDate < now;
+            daysUntilExpiry = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+
+            if (isExpired) {
+              licenseStatus = 'expired';
+            } else if (daysUntilExpiry <= 7) {
+              licenseStatus = 'expiring_soon';
+            }
+          }
+        }
+
         return {
           id: u.id,
           email: u.email,
@@ -137,6 +164,9 @@ exports.listClientAdmins = async (req, res) => {
           createdAt: u.createdAt,
           clientProfile: u.clientProfile,
           displaysUsed,
+          licenseStatus,
+          daysUntilExpiry,
+          isExpired,
         };
       })
     );

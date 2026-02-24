@@ -21,7 +21,7 @@ const nextConfig = {
       'localhost',
       '192.168.1.231',
       '192.168.0.139',
-      '192.168.1.231:3000',
+      '192.168.1.232',
       'signox-backend.onrender.com',
     ],
   },

@@ -8,8 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, User, Building2, UserCog, Shield } from 'lucide-react';
+import { Loader2, User, Building2, UserCog, Shield, Lock, Key } from 'lucide-react';
 import api from '@/lib/api';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 type HierarchyInfo = {
   clientAdmin: {
@@ -48,6 +50,13 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      once: true,
+      easing: 'ease-out-cubic',
+    });
+    
     fetchProfile();
   }, []);
 
@@ -146,104 +155,126 @@ export default function ProfilePage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
-          <p className="mt-2 text-gray-600">Manage your account settings and password</p>
+      <div className="space-y-8 pb-8">
+        {/* Header Section */}
+        <div className="relative" data-aos="fade-down">
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-orange-500/10 rounded-3xl blur-3xl"></div>
+          <div className="relative bg-gradient-to-br from-gray-900 to-black rounded-3xl p-8 border border-gray-800 shadow-2xl">
+            <div className="flex items-center gap-4">
+              <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-4 rounded-2xl">
+                <User className="h-10 w-10 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-black text-white">Profile Settings</h1>
+                <p className="text-gray-300 text-lg mt-1">Manage your account settings and password</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* Profile Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
+          <Card className="border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-300" data-aos="fade-up">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-white">
+              <CardTitle className="flex items-center gap-3 text-2xl">
+                <div className="bg-gradient-to-br from-blue-400 to-blue-600 p-3 rounded-xl">
+                  <User className="h-6 w-6 text-white" />
+                </div>
                 Profile Information
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-base">
                 Your account details and role information
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium text-gray-500">Email</Label>
-                <p className="text-sm font-medium text-gray-900">{profile?.email}</p>
+            <CardContent className="space-y-4 pt-6">
+              <div className="bg-gray-50 p-4 rounded-xl">
+                <Label className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Email</Label>
+                <p className="text-lg font-bold text-gray-900">{profile?.email}</p>
               </div>
 
-              <div>
-                <Label className="text-sm font-medium text-gray-500">Role</Label>
-                <div className="mt-1">
-                  <Badge className={getRoleBadgeColor(profile?.role || '')}>
+              <div className="bg-gray-50 p-4 rounded-xl">
+                <Label className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Role</Label>
+                <div className="mt-2">
+                  <Badge className={`${getRoleBadgeColor(profile?.role || '')} text-base px-4 py-1`}>
                     {getRoleDisplayName(profile?.role || '', profile?.staffRole)}
                   </Badge>
                 </div>
               </div>
 
-              <div>
-                <Label className="text-sm font-medium text-gray-500">Account Status</Label>
-                <div className="mt-1">
-                  <Badge variant={profile?.isActive ? "default" : "destructive"}>
-                    {profile?.isActive ? 'Active' : 'Inactive'}
-                  </Badge>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-xl">
+                  <Label className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Account Status</Label>
+                  <div className="mt-2">
+                    <Badge variant={profile?.isActive ? "default" : "destructive"} className="text-sm px-3 py-1">
+                      {profile?.isActive ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <Label className="text-sm font-medium text-gray-500">Member Since</Label>
-                <p className="text-sm text-gray-900">
-                  {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : 'Unknown'}
-                </p>
+                <div className="bg-gray-50 p-4 rounded-xl">
+                  <Label className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Member Since</Label>
+                  <p className="text-sm font-bold text-gray-900 mt-2">
+                    {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : 'Unknown'}
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Hierarchy Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
+          <Card className="border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-300" data-aos="fade-up" data-aos-delay="100">
+            <CardHeader className="bg-gradient-to-r from-gray-50 to-white">
+              <CardTitle className="flex items-center gap-3 text-2xl">
+                <div className="bg-gradient-to-br from-purple-400 to-purple-600 p-3 rounded-xl">
+                  <Building2 className="h-6 w-6 text-white" />
+                </div>
                 Organization Hierarchy
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-base">
                 Your position within the organization structure
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 pt-6">
               {hierarchy?.companyName && (
-                <div>
-                  <Label className="text-sm font-medium text-gray-500">Company</Label>
-                  <p className="text-sm font-medium text-gray-900">{hierarchy.companyName}</p>
+                <div className="bg-gradient-to-br from-yellow-50 to-orange-50 p-4 rounded-xl border border-yellow-200">
+                  <Label className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Company</Label>
+                  <p className="text-lg font-bold text-gray-900">{hierarchy.companyName}</p>
                 </div>
               )}
 
               {hierarchy?.clientAdmin && (
-                <div>
-                  <Label className="text-sm font-medium text-gray-500">Client Administrator</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Shield className="h-4 w-4 text-blue-500" />
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
+                  <Label className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">Client Administrator</Label>
+                  <div className="flex items-start gap-3 mt-2">
+                    <div className="bg-blue-500 p-2 rounded-lg">
+                      <Shield className="h-5 w-5 text-white" />
+                    </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{hierarchy.clientAdmin.name}</p>
-                      <p className="text-xs text-gray-500">{hierarchy.clientAdmin.email}</p>
+                      <p className="text-base font-bold text-gray-900">{hierarchy.clientAdmin.name}</p>
+                      <p className="text-sm text-gray-600 mt-1">{hierarchy.clientAdmin.email}</p>
                     </div>
                   </div>
                 </div>
               )}
 
               {hierarchy?.userAdmin && profile?.role === 'STAFF' && (
-                <div>
-                  <Label className="text-sm font-medium text-gray-500">User Administrator</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <UserCog className="h-4 w-4 text-green-500" />
+                <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
+                  <Label className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">User Administrator</Label>
+                  <div className="flex items-start gap-3 mt-2">
+                    <div className="bg-green-500 p-2 rounded-lg">
+                      <UserCog className="h-5 w-5 text-white" />
+                    </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{hierarchy.userAdmin.email}</p>
-                      <p className="text-xs text-gray-500">Your direct supervisor</p>
+                      <p className="text-base font-bold text-gray-900">{hierarchy.userAdmin.email}</p>
+                      <p className="text-sm text-gray-600 mt-1">Your direct supervisor</p>
                     </div>
                   </div>
                 </div>
               )}
 
               {!hierarchy?.clientAdmin && !hierarchy?.userAdmin && (
-                <div className="text-center py-4">
+                <div className="text-center py-8 bg-gray-50 rounded-xl">
+                  <Building2 className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                   <p className="text-sm text-gray-500">No hierarchy information available</p>
                 </div>
               )}
@@ -252,18 +283,26 @@ export default function ProfilePage() {
         </div>
 
         {/* Password Change */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Change Password</CardTitle>
-            <CardDescription>
+        <Card className="border-gray-200 shadow-lg" data-aos="fade-up" data-aos-delay="200">
+          <CardHeader className="bg-gradient-to-r from-gray-50 to-white">
+            <CardTitle className="flex items-center gap-3 text-2xl">
+              <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-3 rounded-xl">
+                <Lock className="h-6 w-6 text-white" />
+              </div>
+              Change Password
+            </CardTitle>
+            <CardDescription className="text-base">
               Update your password to keep your account secure
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handlePasswordUpdate} className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-3">
+          <CardContent className="pt-6">
+            <form onSubmit={handlePasswordUpdate} className="space-y-6">
+              <div className="grid gap-6 md:grid-cols-3">
                 <div className="space-y-2">
-                  <Label htmlFor="currentPassword">Current Password</Label>
+                  <Label htmlFor="currentPassword" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <Key className="h-4 w-4" />
+                    Current Password
+                  </Label>
                   <Input
                     id="currentPassword"
                     type="password"
@@ -271,10 +310,14 @@ export default function ProfilePage() {
                     onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
                     required
                     disabled={updating}
+                    className="h-12 border-gray-300 focus:border-yellow-400 focus:ring-yellow-400"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="newPassword">New Password</Label>
+                  <Label htmlFor="newPassword" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <Key className="h-4 w-4" />
+                    New Password
+                  </Label>
                   <Input
                     id="newPassword"
                     type="password"
@@ -283,10 +326,15 @@ export default function ProfilePage() {
                     required
                     disabled={updating}
                     minLength={6}
+                    className="h-12 border-gray-300 focus:border-yellow-400 focus:ring-yellow-400"
                   />
+                  <p className="text-xs text-gray-500">Minimum 6 characters</p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Label htmlFor="confirmPassword" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <Key className="h-4 w-4" />
+                    Confirm New Password
+                  </Label>
                   <Input
                     id="confirmPassword"
                     type="password"
@@ -295,30 +343,40 @@ export default function ProfilePage() {
                     required
                     disabled={updating}
                     minLength={6}
+                    className="h-12 border-gray-300 focus:border-yellow-400 focus:ring-yellow-400"
                   />
                 </div>
               </div>
 
               {error && (
-                <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
-                  {error}
+                <div className="rounded-xl bg-red-50 p-4 text-sm text-red-800 border border-red-200">
+                  <p className="font-semibold mb-1">Error</p>
+                  <p>{error}</p>
                 </div>
               )}
 
               {success && (
-                <div className="rounded-md bg-green-50 p-3 text-sm text-green-800">
-                  {success}
+                <div className="rounded-xl bg-green-50 p-4 text-sm text-green-800 border border-green-200">
+                  <p className="font-semibold mb-1">Success</p>
+                  <p>{success}</p>
                 </div>
               )}
 
-              <Button type="submit" disabled={updating} className="signomart-primary hover:signomart-primary">
+              <Button 
+                type="submit" 
+                disabled={updating} 
+                className="h-12 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-bold text-base shadow-lg hover:shadow-yellow-500/50 transition-all duration-300 hover:scale-105"
+              >
                 {updating ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                     Updating Password...
                   </>
                 ) : (
-                  'Update Password'
+                  <>
+                    <Lock className="mr-2 h-5 w-5" />
+                    Update Password
+                  </>
                 )}
               </Button>
             </form>

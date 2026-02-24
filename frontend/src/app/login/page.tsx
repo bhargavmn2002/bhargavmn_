@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, CheckCircle, Zap, TrendingUp, Shield, ArrowRight, Star, Award, Users, Building2 } from 'lucide-react';
+import { Loader2, Monitor, Zap, Shield, Cloud, ArrowRight, Users, BarChart3, Calendar, Layout, PlayCircle, Settings, CheckCircle2 } from 'lucide-react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -14,90 +16,16 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
 
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
-  const [scrollY, setScrollY] = useState(0);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Pre-generate particle positions to avoid hydration mismatch
-  const particles = useMemo(() => {
-    return Array.from({ length: 30 }, (_, i) => ({
-      id: i,
-      width: (i * 7 % 6) + 2,
-      height: (i * 5 % 6) + 2,
-      top: (i * 13 % 100),
-      left: (i * 17 % 100),
-      duration: (i * 3 % 15) + 10,
-      delay: (i * 2 % 5),
-    }));
+  useEffect(() => {
+    AOS.init({
+      duration: 1000,
+      once: true,
+      easing: 'ease-out-cubic',
+    });
+    
+    // Ensure page starts at top
+    window.scrollTo(0, 0);
   }, []);
-
-  // Multiple image galleries
-  const signageGallery = [
-    'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80',
-    'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1200&q=80',
-    'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80',
-    'https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?w=1200&q=80',
-    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80',
-  ];
-
-  const projectImages = [
-    'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&q=80',
-    'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80',
-    'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&q=80',
-    'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&q=80',
-  ];
-
-  const testimonials = [
-    { name: 'Rajesh Kumar', company: 'Tech Solutions Pvt Ltd', text: 'Outstanding signage quality and service!' },
-    { name: 'Priya Sharma', company: 'Retail Chain', text: 'Transformed our brand visibility completely.' },
-    { name: 'Amit Patel', company: 'Corporate Office', text: 'Professional team, excellent results!' },
-  ];
-
-  const features = [
-    { icon: Zap, title: 'Solving problems, building brands', color: 'from-yellow-400 to-orange-500' },
-    { icon: TrendingUp, title: 'Building brands with purpose', color: 'from-orange-400 to-red-500' },
-    { icon: Shield, title: 'Connecting customers to brands', color: 'from-yellow-500 to-yellow-600' },
-  ];
-
-  // Mouse parallax effect
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        setMousePosition({
-          x: (e.clientX - rect.left) / rect.width,
-          y: (e.clientY - rect.top) / rect.height,
-        });
-      }
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  // Scroll effect
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Auto-rotate main carousel
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % signageGallery.length);
-    }, 3500);
-    return () => clearInterval(interval);
-  }, [signageGallery.length]);
-
-  // Auto-rotate testimonials
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 4500);
-    return () => clearInterval(interval);
-  }, [testimonials.length]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,227 +40,223 @@ export default function LoginPage() {
     }
   };
 
+  const features = [
+    {
+      icon: Monitor,
+      title: 'Multi-Display Management',
+      description: 'Control unlimited displays from a single dashboard. Monitor status, schedule content, and manage everything remotely in real-time.',
+      color: 'from-yellow-400 to-orange-500'
+    },
+    {
+      icon: Zap,
+      title: 'Real-Time Content Updates',
+      description: 'Push content updates instantly to all your displays. Changes reflect immediately without any delays or manual intervention.',
+      color: 'from-orange-400 to-red-500'
+    },
+    {
+      icon: Shield,
+      title: 'Enterprise Security',
+      description: 'Bank-level security with role-based access control, encrypted data transmission, and comprehensive audit logs.',
+      color: 'from-yellow-500 to-yellow-600'
+    },
+    {
+      icon: Cloud,
+      title: 'Cloud-Based Platform',
+      description: 'Access your signage system from anywhere, anytime. No hardware installation, no maintenance, just pure convenience.',
+      color: 'from-blue-400 to-blue-600'
+    }
+  ];
+
+  const capabilities = [
+    { icon: Layout, title: 'Layout Designer', desc: 'Create multi-zone layouts with drag-and-drop' },
+    { icon: PlayCircle, title: 'Playlist Management', desc: 'Build dynamic playlists with scheduling' },
+    { icon: Calendar, title: 'Smart Scheduling', desc: 'Time-based and date-based content control' },
+    { icon: BarChart3, title: 'Analytics & Reports', desc: 'Proof of play and performance metrics' },
+    { icon: Users, title: 'User Management', desc: 'Multi-level access with role permissions' },
+    { icon: Settings, title: 'Remote Control', desc: 'Manage displays from anywhere' },
+  ];
+
+  const benefits = [
+    'Reduce operational costs by up to 60%',
+    'Update content across all locations instantly',
+    'Increase customer engagement by 40%',
+    'Save time with automated scheduling',
+    'Scale effortlessly as your business grows',
+    'Get 24/7 support from our expert team'
+  ];
+
   return (
-    <div ref={containerRef} className="flex min-h-screen overflow-hidden bg-black">
-      {/* Left Side - Dynamic Showcase (70%) */}
-      <div className="hidden lg:block lg:w-[70%] relative overflow-hidden">
-        {/* Parallax Background Layers */}
-        <div 
-          className="absolute inset-0 transition-transform duration-300"
-          style={{
-            transform: `translate(${mousePosition.x * 20}px, ${mousePosition.y * 20}px)`,
-          }}
-        >
-          {/* Main Image Carousel with Ken Burns Effect */}
-          {signageGallery.map((image, index) => (
-            <div
-              key={index}
-              className={`absolute inset-0 transition-all duration-2000 ${
-                index === currentSlide ? 'opacity-100 scale-110' : 'opacity-0 scale-100'
-              }`}
-              style={{
-                backgroundImage: `url(${image})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                animation: index === currentSlide ? 'kenBurns 20s ease-out infinite' : 'none',
-              }}
-            />
-          ))}
-          <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-transparent" />
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 overflow-hidden">
+      {/* Left Side - SignoX Information (70%) */}
+      <div className="hidden lg:flex lg:w-[70%] relative overflow-y-auto scrollbar-hide">
+        {/* Animated Background */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-20 left-20 w-96 h-96 bg-yellow-400/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-yellow-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-orange-400/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
         </div>
 
-        {/* Floating Particles */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {particles.map((particle) => (
-            <div
-              key={particle.id}
-              className="absolute bg-yellow-400 rounded-full opacity-20"
-              style={{
-                width: particle.width + 'px',
-                height: particle.height + 'px',
-                top: particle.top + '%',
-                left: particle.left + '%',
-                animation: `float ${particle.duration}s ease-in-out infinite`,
-                animationDelay: `${particle.delay}s`,
-              }}
-            />
-          ))}
-        </div>
+        <div className="relative z-10 w-full p-16 space-y-16">
+          {/* Logo and Branding */}
+          <div data-aos="fade-down">
+            <div className="flex items-center gap-6 mb-8">
+              <img 
+                src="/signomart-full-logo.png" 
+                alt="Signomart" 
+                className="h-32 w-32 object-contain"
+              />
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-0">
+                  <span className="text-7xl font-black text-white tracking-tight">SIGN</span>
+                  <span className="text-7xl font-black text-yellow-400 tracking-tight">O</span>
+                  <span className="text-7xl font-black text-white tracking-tight">X</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-1.5 w-32 bg-yellow-400"></div>
+                  <p className="text-yellow-400 font-bold text-2xl">Digital Signage Management</p>
+                </div>
+              </div>
+            </div>
+          </div>
 
-        {/* Content Container with Scroll */}
-        <div className="relative z-10 h-full overflow-y-auto scrollbar-hide">
-          <div className="min-h-full p-12 space-y-12">
-            {/* Header with Logo */}
-            <div className="animate-slide-down">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="relative group">
-                  <img 
-                    src="/signomart-logo.png" 
-                    alt="Logo" 
-                    className="h-24 w-24 bg-white p-4 rounded-3xl shadow-2xl transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500"
-                  />
-                  <div className="absolute -top-2 -right-2 bg-yellow-400 rounded-full p-2 animate-bounce">
-                    <Star className="h-5 w-5 text-white fill-white" />
+          {/* Main Description */}
+          <div data-aos="fade-up" className="bg-white/10 backdrop-blur-xl rounded-3xl p-10 border border-white/20">
+            <h2 className="text-5xl font-black text-white mb-6">
+              Transform Your Digital Signage Experience
+            </h2>
+            <p className="text-gray-200 text-xl leading-relaxed">
+              SignoX is a comprehensive cloud-based digital signage management system that empowers businesses to create, manage, and display dynamic content across multiple screens with ease. Built for scalability, reliability, and performance.
+            </p>
+          </div>
+
+          {/* Key Features */}
+          <div className="space-y-6">
+            <h3 data-aos="fade-right" className="text-4xl font-black text-white mb-8">Powerful Features</h3>
+            {features.map((feature, i) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={i}
+                  data-aos="fade-right"
+                  data-aos-delay={i * 100}
+                  className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300 group"
+                >
+                  <div className="flex items-start gap-6">
+                    <div className={`bg-gradient-to-br ${feature.color} p-4 rounded-2xl group-hover:scale-110 transition-transform duration-300`}>
+                      <Icon className="h-10 w-10 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-bold text-white mb-3">{feature.title}</h3>
+                      <p className="text-gray-300 text-lg leading-relaxed">{feature.description}</p>
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <h1 className="text-6xl font-black text-white tracking-tight">SignoMart</h1>
-                  <p className="text-yellow-400 font-bold text-xl mt-2">We Sign Your Growth</p>
-                </div>
-              </div>
+              );
+            })}
+          </div>
 
-              {/* Animated Stats */}
-              <div className="grid grid-cols-4 gap-4">
-                {[
-                  { icon: Building2, value: '500+', label: 'Projects' },
-                  { icon: Users, value: '200+', label: 'Clients' },
-                  { icon: Award, value: '15+', label: 'Years' },
-                  { icon: Star, value: '100%', label: 'Satisfaction' },
-                ].map((stat, i) => {
-                  const Icon = stat.icon;
-                  return (
-                    <div
-                      key={i}
-                      className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 border border-white/20 hover:bg-white/20 hover:scale-105 transition-all duration-300 cursor-pointer animate-fade-in"
-                      style={{ animationDelay: `${i * 0.1}s` }}
-                    >
-                      <Icon className="h-8 w-8 text-yellow-400 mb-2" />
-                      <div className="text-3xl font-black text-white">{stat.value}</div>
-                      <div className="text-sm text-gray-300">{stat.label}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Main Description Card */}
-            <div className="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-2xl rounded-3xl p-8 border border-white/30 shadow-2xl animate-slide-up hover:scale-[1.02] transition-all duration-500">
-              <h2 className="text-4xl font-black text-white mb-4">
-                Digital Signage Management System
-              </h2>
-              <p className="text-gray-200 text-lg leading-relaxed mb-6">
-                Signomart is one of the best signage manufacturers in Bangalore. ISO and OHSAS Certified with a track record of excellence and trust. From Outdoor 3D Sign Boards to LED or Neon Signs, we deliver innovative solutions that transform spaces.
-              </p>
-              <div className="flex items-center gap-3 text-yellow-400">
-                <CheckCircle className="h-6 w-6" />
-                <span className="font-bold text-lg">ISO & OHSAS Certified</span>
-              </div>
-            </div>
-
-            {/* Animated Feature Cards */}
-            <div className="space-y-4">
-              {features.map((feature, i) => {
-                const Icon = feature.icon;
+          {/* Capabilities Grid */}
+          <div>
+            <h3 data-aos="fade-right" className="text-4xl font-black text-white mb-8">Complete Solution</h3>
+            <div className="grid grid-cols-3 gap-6">
+              {capabilities.map((cap, i) => {
+                const Icon = cap.icon;
                 return (
                   <div
                     key={i}
-                    className={`bg-gradient-to-r ${feature.color} rounded-3xl p-6 shadow-2xl hover:shadow-yellow-500/50 transition-all duration-500 cursor-pointer animate-slide-right group`}
-                    style={{ animationDelay: `${i * 0.15}s` }}
+                    data-aos="zoom-in"
+                    data-aos-delay={i * 100}
+                    className="bg-gradient-to-br from-yellow-400/20 to-yellow-600/20 backdrop-blur-xl rounded-2xl p-6 border border-yellow-400/30 hover:scale-105 hover:border-yellow-400/50 transition-all duration-300"
                   >
-                    <div className="flex items-center gap-6">
-                      <div className="bg-white/30 backdrop-blur-sm p-4 rounded-2xl group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
-                        <Icon className="h-10 w-10 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-2xl font-black text-white">{feature.title}</h3>
-                      </div>
-                      <ArrowRight className="h-8 w-8 text-white group-hover:translate-x-2 transition-transform duration-300" />
-                    </div>
+                    <Icon className="h-10 w-10 text-yellow-400 mb-4" />
+                    <h4 className="text-white font-bold text-lg mb-2">{cap.title}</h4>
+                    <p className="text-gray-300 text-sm">{cap.desc}</p>
                   </div>
                 );
               })}
             </div>
+          </div>
 
-            {/* Project Gallery Grid */}
-            <div className="grid grid-cols-2 gap-4">
-              {projectImages.map((img, i) => (
+          {/* Advanced Features */}
+          <div>
+            <h3 data-aos="fade-right" className="text-4xl font-black text-white mb-8">Advanced Features</h3>
+            <div className="grid grid-cols-2 gap-6">
+              {[
+                { title: 'Multi-Zone Layouts', desc: 'Create complex layouts with multiple content zones and independent playlists' },
+                { title: 'Device Pairing', desc: 'Secure 6-digit pairing code system for quick display setup' },
+                { title: 'Heartbeat Monitoring', desc: 'Real-time display status tracking with automatic offline detection' },
+                { title: 'Role-Based Access', desc: 'Super Admin, Client Admin, User Admin, and Staff role hierarchy' },
+                { title: 'License Management', desc: 'Automated license expiry checking and enforcement system' },
+                { title: 'Media Library', desc: 'Organized storage with tags, metadata, and search capabilities' },
+                { title: 'Responsive Player', desc: 'Adaptive display player that works on any screen size or orientation' },
+                { title: 'Schedule Override', desc: 'Priority-based scheduling with date and time range support' },
+              ].map((feature, i) => (
                 <div
                   key={i}
-                  className="relative h-48 rounded-2xl overflow-hidden group cursor-pointer animate-fade-in"
-                  style={{ animationDelay: `${i * 0.1}s` }}
+                  data-aos="fade-up"
+                  data-aos-delay={i * 50}
+                  className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300"
                 >
-                  <img
-                    src={img}
-                    alt={`Project ${i + 1}`}
-                    className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                    <span className="text-white font-bold">Project {i + 1}</span>
-                  </div>
+                  <h4 className="text-white font-bold text-xl mb-2">{feature.title}</h4>
+                  <p className="text-gray-300">{feature.desc}</p>
                 </div>
-              ))}
-            </div>
-
-            {/* Testimonials Carousel */}
-            <div className="relative h-40">
-              {testimonials.map((testimonial, i) => (
-                <div
-                  key={i}
-                  className={`absolute inset-0 transition-all duration-700 ${
-                    i === currentTestimonial ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-                  }`}
-                >
-                  <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20">
-                    <p className="text-white text-xl italic mb-4">"{testimonial.text}"</p>
-                    <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 bg-yellow-400 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                        {testimonial.name[0]}
-                      </div>
-                      <div>
-                        <div className="text-white font-bold">{testimonial.name}</div>
-                        <div className="text-gray-300 text-sm">{testimonial.company}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Carousel Indicators */}
-            <div className="flex justify-center gap-2">
-              {signageGallery.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrentSlide(i)}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    i === currentSlide ? 'w-12 bg-yellow-400' : 'w-2 bg-white/30'
-                  }`}
-                />
               ))}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Right Side - Fixed Login Card (30%) */}
-      <div className="w-full lg:w-[30%] lg:fixed lg:right-0 lg:top-0 lg:h-screen flex items-center justify-center p-8 bg-gradient-to-br from-gray-900 to-black relative overflow-hidden">
-        {/* Animated Background */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-yellow-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        </div>
+      {/* Right Side - Login Form (30%) */}
+      <div className="w-full lg:w-[30%] lg:fixed lg:right-0 lg:top-0 lg:h-screen flex items-center justify-center p-8 relative">
+        {/* Background Effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-800/50 to-black/50 backdrop-blur-sm"></div>
 
         <div className="w-full max-w-md relative z-10">
           {/* Mobile Logo */}
-          <div className="lg:hidden text-center mb-8 animate-fade-in">
-            <img src="/signomart-logo.png" alt="Logo" className="h-20 w-20 mx-auto bg-white p-3 rounded-xl shadow-lg mb-3" />
-            <h1 className="text-3xl font-bold text-white">SignoMart</h1>
+          <div className="lg:hidden text-center mb-8" data-aos="fade-down">
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <img 
+                src="/signomart-full-logo.png" 
+                alt="Signomart" 
+                className="h-20 w-20 object-contain"
+              />
+              <div className="flex flex-col items-start gap-1">
+                <div className="flex items-center gap-0">
+                  <span className="text-4xl font-bold text-white">SIGN</span>
+                  <span className="text-4xl font-bold text-yellow-400">O</span>
+                  <span className="text-4xl font-bold text-white">X</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-0.5 w-16 bg-yellow-400"></div>
+                  <span className="text-xs text-gray-300 italic">Digital Signage</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="bg-white/5 backdrop-blur-2xl rounded-3xl p-10 border border-white/10 shadow-2xl animate-scale-in">
+          <div data-aos="fade-left" className="bg-white/10 backdrop-blur-2xl rounded-3xl p-10 border border-white/20 shadow-2xl">
             {/* Logo in Card */}
             <div className="text-center mb-8">
-              <div className="flex items-center justify-center gap-1 mb-4">
-                <h1 className="text-5xl font-black text-white">SIGN</h1>
+              <div className="flex items-center justify-center gap-4 mb-4">
                 <img 
-                  src="/signomart-logo.png" 
-                  alt="O" 
-                  className="h-14 w-14 bg-white p-2 rounded-xl inline-block hover:rotate-12 transition-transform duration-300"
+                  src="/signomart-full-logo.png" 
+                  alt="Signomart" 
+                  className="h-16 w-16 object-contain"
                 />
-                <h1 className="text-5xl font-black text-white">MART</h1>
+                <div className="flex flex-col items-start gap-1">
+                  <div className="flex items-center gap-0">
+                    <span className="text-5xl font-black text-white">SIGN</span>
+                    <span className="text-5xl font-black text-yellow-400">O</span>
+                    <span className="text-5xl font-black text-white">X</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-0.5 w-20 bg-yellow-400"></div>
+                    <span className="text-xs text-gray-300 italic">Digital Signage</span>
+                  </div>
+                </div>
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">Welcome Back</h2>
-              <p className="text-gray-400">Sign in to manage your digital signage</p>
+              <p className="text-gray-400">Sign in to your account</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -341,7 +265,7 @@ export default function LoginPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@signox.com"
+                  placeholder="your@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -365,7 +289,7 @@ export default function LoginPage() {
               </div>
 
               {error && (
-                <div className="rounded-xl bg-red-500/20 p-4 text-sm text-red-200 border border-red-500/30 animate-shake">
+                <div className="rounded-xl bg-red-500/20 p-4 text-sm text-red-200 border border-red-500/30">
                   <p className="font-semibold mb-1">Login Failed</p>
                   <p className="text-xs">{error}</p>
                 </div>
@@ -383,62 +307,17 @@ export default function LoginPage() {
                 )}
               </Button>
             </form>
-
-            <div className="mt-6 text-center">
-              <div className="text-sm text-gray-400 bg-white/5 p-4 rounded-xl border border-white/10">
-                <p className="font-semibold text-gray-300 mb-2">Demo Credentials:</p>
-                <p className="font-mono"></p>
-                <p className="font-mono"></p>
-              </div>
-            </div>
           </div>
 
-          <p className="text-center text-sm text-gray-500 mt-6">© 2026 SignoMart. All rights reserved.</p>
+          <p className="text-center text-sm text-gray-500 mt-6">© 2026 SignoX. All rights reserved.</p>
         </div>
       </div>
 
       <style jsx global>{`
-        @keyframes kenBurns {
-          0% { transform: scale(1); }
-          100% { transform: scale(1.2); }
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0) translateX(0); }
-          50% { transform: translateY(-30px) translateX(20px); }
-        }
-        @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes slide-down {
-          from { opacity: 0; transform: translateY(-30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes slide-up {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes slide-right {
-          from { opacity: 0; transform: translateX(-30px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes scale-in {
-          from { opacity: 0; transform: scale(0.9); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-10px); }
-          75% { transform: translateX(10px); }
-        }
-        .animate-fade-in { animation: fade-in 0.8s ease-out forwards; }
-        .animate-slide-down { animation: slide-down 0.8s ease-out forwards; }
-        .animate-slide-up { animation: slide-up 0.8s ease-out forwards; }
-        .animate-slide-right { animation: slide-right 0.8s ease-out forwards; }
-        .animate-scale-in { animation: scale-in 0.6s ease-out forwards; }
-        .animate-shake { animation: shake 0.5s ease-in-out; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        html { scroll-behavior: smooth; }
+        body { overflow-x: hidden; }
       `}</style>
     </div>
   );

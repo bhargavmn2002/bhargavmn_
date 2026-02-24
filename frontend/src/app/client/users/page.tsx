@@ -16,7 +16,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, ShieldAlert, Key, Loader2 } from 'lucide-react';
+import { Plus, Trash2, ShieldAlert, Key, Loader2, Users } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -26,6 +26,8 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 export default function ClientUsersPage() {
   const { user, loading: authLoading } = useAuth();
@@ -70,6 +72,13 @@ export default function ClientUsersPage() {
   };
 
   useEffect(() => {
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      once: true,
+      easing: 'ease-out-cubic',
+    });
+
     if (!authLoading) {
       if (user?.role !== 'CLIENT_ADMIN') {
         router.push('/login'); // Kick out if not Client Admin
@@ -157,38 +166,48 @@ export default function ClientUsersPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">User Admins</h1>
-            <p className="text-gray-600">
-              Manage the operational managers for your organization.
-            </p>
-          </div>
-          
-          {/* CREATE USER MODAL */}
-          <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-              <Button className="signomart-primary hover:signomart-primary"><Plus className="mr-2 h-4 w-4" /> Add User Admin</Button>
-            </DialogTrigger>
-            <DialogContent className="bg-white">
-              <DialogHeader>
-                <DialogTitle>Create New User Admin</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleCreate} className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Email Address</Label>
-                  <Input 
-                    required 
-                    type="email" 
-                    placeholder="manager@branch.com"
-                    value={formData.email}
-                    onChange={e => setFormData({...formData, email: e.target.value})}
-                  />
+      <div className="space-y-8 pb-8">
+        {/* Header Section */}
+        <div className="relative" data-aos="fade-down">
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-orange-500/10 rounded-3xl blur-3xl"></div>
+          <div className="relative bg-gradient-to-br from-gray-900 to-black rounded-3xl p-8 border border-gray-800 shadow-2xl">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <Users className="h-10 w-10 text-yellow-400" />
+                  <h1 className="text-4xl font-black text-white">User Admins</h1>
                 </div>
-                <div className="space-y-2">
-                  <Label>Password</Label>
-                  <Input 
+                <p className="text-gray-300 text-lg">
+                  Manage the operational managers for your organization.
+                </p>
+              </div>
+              
+              {/* CREATE USER MODAL */}
+              <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                <DialogTrigger asChild>
+                  <Button className="h-12 gap-2 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-bold shadow-lg hover:shadow-yellow-500/50 transition-all duration-300 hover:scale-105">
+                    <Plus className="h-5 w-5" /> Add User Admin
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-white">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl">Create New User Admin</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleCreate} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold">Email Address</Label>
+                      <Input 
+                        required 
+                        type="email" 
+                        placeholder="manager@branch.com"
+                        value={formData.email}
+                        onChange={e => setFormData({...formData, email: e.target.value})}
+                        className="h-12"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold">Password</Label>
+                      <Input 
                     required 
                     type="password" 
                     value={formData.password}
@@ -199,6 +218,8 @@ export default function ClientUsersPage() {
               </form>
             </DialogContent>
           </Dialog>
+            </div>
+          </div>
         </div>
 
         {/* PASSWORD RESET MODAL */}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, Calendar, Clock, Monitor, Play, Edit, Trash2 } from 'lucide-react';
+import { Plus, Calendar, Clock, Monitor, Play, Edit, Trash2, CalendarClock } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import api from '@/lib/api';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 interface Schedule {
   id: string;
@@ -103,6 +105,13 @@ export default function SchedulesPage() {
   ];
 
   useEffect(() => {
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      once: true,
+      easing: 'ease-out-cubic',
+    });
+    
     fetchData();
   }, []);
 
@@ -298,37 +307,45 @@ export default function SchedulesPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Schedules</h1>
-            <p className="mt-2 text-gray-600">Manage content scheduling for your displays</p>
-          </div>
-          <Dialog open={showCreateDialog} onOpenChange={(open) => { setShowCreateDialog(open); if (!open) setFormError(''); }}>
-            <DialogTrigger asChild>
-              <Button onClick={resetForm}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Schedule
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingSchedule ? 'Edit Schedule' : 'Create New Schedule'}
-                </DialogTitle>
-                <DialogDescription>
-                  Assign a playlist or layout to run on selected displays during the chosen time and days. The player will show this content when the schedule is active.
-                </DialogDescription>
-              </DialogHeader>
-              
-              {formError && (
-                <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
-                  {formError}
+      <div className="space-y-8 pb-8">
+        {/* Header Section */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-orange-500/10 rounded-3xl blur-3xl"></div>
+          <div className="relative bg-gradient-to-br from-gray-900 to-black rounded-3xl p-8 border border-gray-800 shadow-2xl">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <CalendarClock className="h-10 w-10 text-yellow-400" />
+                  <h1 className="text-4xl font-black text-white">Schedules</h1>
                 </div>
-              )}
+                <p className="text-gray-300 text-lg">Manage content scheduling for your displays</p>
+              </div>
+              <Dialog open={showCreateDialog} onOpenChange={(open) => { setShowCreateDialog(open); if (!open) setFormError(''); }}>
+                <DialogTrigger asChild>
+                  <Button onClick={resetForm} className="h-12 gap-2 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-bold shadow-lg hover:shadow-yellow-500/50 transition-all duration-300 hover:scale-105">
+                    <Plus className="h-5 w-5" />
+                    Create Schedule
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl">
+                      {editingSchedule ? 'Edit Schedule' : 'Create New Schedule'}
+                    </DialogTitle>
+                    <DialogDescription className="text-base">
+                      Assign a playlist or layout to run on selected displays during the chosen time and days. The player will show this content when the schedule is active.
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  {formError && (
+                    <div className="rounded-xl bg-red-50 p-4 text-sm text-red-800 border border-red-200">
+                      <p className="font-semibold mb-1">Error</p>
+                      <p>{formError}</p>
+                    </div>
+                  )}
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-2">
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid gap-4 md:grid-cols-2">
                   <div>
                     <Label htmlFor="name">Schedule Name *</Label>
                     <Input
@@ -571,6 +588,8 @@ export default function SchedulesPage() {
               </form>
             </DialogContent>
           </Dialog>
+            </div>
+          </div>
         </div>
 
         <div className="grid gap-6">
@@ -589,25 +608,28 @@ export default function SchedulesPage() {
               </CardContent>
             </Card>
           ) : (
-            schedules.map(schedule => (
-              <Card key={schedule.id}>
-                <CardHeader>
+            schedules.map((schedule, index) => (
+              <Card key={schedule.id} className="border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300">
+                <CardHeader className="bg-gradient-to-r from-gray-50 to-white">
                   <div className="flex items-center justify-between">
                     <div>
-                      <CardTitle className="flex items-center gap-2">
-                        <Calendar className="h-5 w-5" />
+                      <CardTitle className="flex items-center gap-3 text-xl">
+                        <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-2 rounded-lg">
+                          <Calendar className="h-5 w-5 text-white" />
+                        </div>
                         {schedule.name}
                         {!schedule.isActive && (
-                          <Badge variant="secondary">Inactive</Badge>
+                          <Badge variant="secondary" className="text-sm">Inactive</Badge>
                         )}
                       </CardTitle>
-                      <CardDescription>{schedule.description}</CardDescription>
+                      <CardDescription className="text-base mt-2">{schedule.description}</CardDescription>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleEdit(schedule)}
+                        className="hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>

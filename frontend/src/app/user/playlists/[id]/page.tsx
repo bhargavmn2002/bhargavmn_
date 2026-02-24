@@ -39,6 +39,8 @@ import {
   FileVideo,
   FileImage,
   RefreshCw,
+  ListMusic,
+  ArrowLeft,
 } from 'lucide-react';
 import {
   Dialog,
@@ -49,6 +51,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import api from '@/lib/api';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
@@ -510,6 +514,11 @@ export default function PlaylistEditorPage() {
   }, [items, media]);
 
   useEffect(() => {
+    AOS.init({
+      duration: 800,
+      once: true,
+      easing: 'ease-out-cubic',
+    });
     if (!canView) {
       router.push('/user/dashboard');
       return;
@@ -704,8 +713,8 @@ export default function PlaylistEditorPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-          <p className="ml-3 text-gray-600">Loading playlist...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-yellow-500" />
+          <p className="ml-3 text-gray-600 font-medium">Loading playlist...</p>
         </div>
       </DashboardLayout>
     );
@@ -714,8 +723,8 @@ export default function PlaylistEditorPage() {
   if (!playlist) {
     return (
       <DashboardLayout>
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
-          <p>Playlist not found</p>
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-800 shadow-lg">
+          <p className="font-semibold">Playlist not found</p>
         </div>
       </DashboardLayout>
     );
@@ -727,48 +736,76 @@ export default function PlaylistEditorPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 pb-6">
-          <div className="flex-1">
-            <div className="flex items-center gap-4">
-              <Input
-                value={playlistName}
-                onChange={(e) => setPlaylistName(e.target.value)}
-                disabled={!canEdit}
-                className="text-2xl font-bold border-0 p-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0 max-w-md"
-                placeholder="Playlist Name"
-              />
-            </div>
-            <div className="flex items-center gap-4 mt-3">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Clock className="h-4 w-4" />
-                <span className="font-semibold">Total Duration:</span>
-                <span>{Math.floor(totalDuration / 60)}m {totalDuration % 60}s</span>
+        {/* Header with gradient background */}
+        <div 
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black p-6 shadow-2xl"
+          data-aos="fade-down"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/10 to-orange-500/10"></div>
+          <div className="relative">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-4 mb-3">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => router.push('/user/playlists')}
+                    className="text-gray-300 hover:text-white hover:bg-white/10"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back
+                  </Button>
+                  <div className="rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 p-2 shadow-lg">
+                    <ListMusic className="h-8 w-8 text-white" />
+                  </div>
+                  <Input
+                    value={playlistName}
+                    onChange={(e) => setPlaylistName(e.target.value)}
+                    disabled={!canEdit}
+                    className="text-3xl font-bold border-0 bg-transparent text-white p-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0 max-w-md placeholder:text-gray-500"
+                    placeholder="Playlist Name"
+                  />
+                </div>
+                <div className="flex items-center gap-6 ml-14">
+                  <div className="flex items-center gap-2 text-sm text-gray-300">
+                    <Clock className="h-4 w-4 text-yellow-400" />
+                    <span className="font-semibold">Total Duration:</span>
+                    <span className="text-white">{Math.floor(totalDuration / 60)}m {totalDuration % 60}s</span>
+                  </div>
+                  <div className="text-sm text-gray-300">
+                    <span className="font-semibold text-white">{items.length}</span> {items.length === 1 ? 'item' : 'items'}
+                  </div>
+                </div>
               </div>
-              <div className="text-sm text-gray-600">
-                <span className="font-semibold">{items.length}</span> {items.length === 1 ? 'item' : 'items'}
-              </div>
+              {canEdit && (
+                <Button 
+                  onClick={handleSave} 
+                  disabled={saving} 
+                  size="lg" 
+                  className="gap-2 h-12 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-gray-900 font-semibold shadow-lg"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4" />
+                      Save Changes
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </div>
-          {canEdit && (
-            <Button onClick={handleSave} disabled={saving} size="lg" className="gap-2">
-              {saving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4" />
-                  Save Changes
-                </>
-              )}
-            </Button>
-          )}
         </div>
 
         {error && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+          <div 
+            className="rounded-2xl border border-red-200 bg-red-50 p-4 text-red-800 shadow-lg"
+            data-aos="fade-up"
+          >
             {error}
           </div>
         )}
@@ -776,8 +813,12 @@ export default function PlaylistEditorPage() {
         {/* Split Pane Body */}
         <div className="grid grid-cols-[30%_70%] gap-6 h-[calc(100vh-280px)]">
           {/* Left Panel: Media Library */}
-          <div className="flex flex-col border border-gray-200 rounded-lg bg-white overflow-hidden">
-            <div className="p-4 border-b border-gray-200">
+          <div 
+            className="flex flex-col border border-gray-200 rounded-2xl bg-white overflow-hidden shadow-lg"
+            data-aos="fade-right"
+            data-aos-delay="100"
+          >
+            <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-lg font-semibold text-gray-900">Media Library</h2>
                 <Button
@@ -827,8 +868,12 @@ export default function PlaylistEditorPage() {
           </div>
 
           {/* Right Panel: Playlist Sequence */}
-          <div className="flex flex-col border border-gray-200 rounded-lg bg-white overflow-hidden">
-            <div className="p-4 border-b border-gray-200">
+          <div 
+            className="flex flex-col border border-gray-200 rounded-2xl bg-white overflow-hidden shadow-lg"
+            data-aos="fade-left"
+            data-aos-delay="200"
+          >
+            <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
               <h2 className="text-lg font-semibold text-gray-900">Playlist Sequence</h2>
               <p className="text-sm text-gray-600 mt-1">Drag to reorder • Click media to add</p>
             </div>
