@@ -8,7 +8,7 @@
     android:padding="24dp"
     tools:context=".ui.config.ServerConfigActivity">
 
-    <!-- SignoMart Logo -->
+    <!-- SignoX Logo -->
     <include
         android:id="@+id/logoLayout"
         layout="@layout/layout_signomart_logo"

@@ -84,6 +84,9 @@ class MediaListFragment : Fragment() {
             layoutManager = GridLayoutManager(requireContext(), 2)
             adapter = mediaAdapter
             
+            // Apply layout animation
+            com.signox.dashboard.utils.AnimationUtils.applyRecyclerViewAnimation(this)
+            
             // Add scroll listener for pagination
             addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -128,6 +131,8 @@ class MediaListFragment : Fragment() {
     
     private fun setupFab() {
         binding.fabUpload.setOnClickListener {
+            // Add pulse animation on FAB click
+            com.signox.dashboard.utils.AnimationUtils.pulse(binding.fabUpload)
             openFilePicker()
         }
     }

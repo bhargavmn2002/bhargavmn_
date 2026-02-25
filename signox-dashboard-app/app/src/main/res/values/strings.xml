@@ -3,8 +3,8 @@
     <string name="app_name">SignoX Dashboard</string>
     
     <!-- Login -->
-    <string name="login_title">SignoMart</string>
-    <string name="login_subtitle">We sign your growth</string>
+    <string name="login_title">SignoX</string>
+    <string name="login_subtitle">Digital Signage Management</string>
     <string name="login_description">Digital Signage Management System</string>
     <string name="email">Email</string>
     <string name="password">Password</string>

@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.signox.dashboard.data.api.NetworkResult
 import com.signox.dashboard.databinding.FragmentUserAdminDashboardBinding
+import com.signox.dashboard.utils.AnimationUtils
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -31,7 +32,30 @@ class UserAdminDashboardFragment : Fragment() {
         
         setupUI()
         observeViewModel()
+        animateViews()
         viewModel.loadDashboardData()
+    }
+    
+    private fun animateViews() {
+        // Get all card views from the layout
+        val cards = mutableListOf<View>()
+        
+        // Find all CardViews in the layout
+        binding.root.findViewsWithType(androidx.cardview.widget.CardView::class.java, cards)
+        
+        // Animate cards in sequence with slide up effect
+        AnimationUtils.animateSequence(cards, AnimationUtils.AnimationType.SLIDE_UP, 100)
+    }
+    
+    private fun View.findViewsWithType(type: Class<*>, result: MutableList<View>) {
+        if (type.isInstance(this)) {
+            result.add(this)
+        }
+        if (this is ViewGroup) {
+            for (i in 0 until childCount) {
+                getChildAt(i).findViewsWithType(type, result)
+            }
+        }
     }
     
     private fun setupUI() {

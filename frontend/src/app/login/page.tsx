@@ -107,13 +107,11 @@ export default function LoginPage() {
               />
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-0">
-                  <span className="text-7xl font-black text-white tracking-tight">SIGN</span>
-                  <span className="text-7xl font-black text-yellow-400 tracking-tight">O</span>
-                  <span className="text-7xl font-black text-white tracking-tight">X</span>
+                  <span className="text-7xl font-black text-white tracking-tight">SIGNOX</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="h-1.5 w-32 bg-yellow-400"></div>
-                  <p className="text-yellow-400 font-bold text-2xl">Digital Signage Management</p>
+                  <div className="h-1.5 w-32 bg-white"></div>
+                  <p className="text-white font-bold text-2xl">Digital Signage Management</p>
                 </div>
               </div>
             </div>
@@ -222,12 +220,10 @@ export default function LoginPage() {
               />
               <div className="flex flex-col items-start gap-1">
                 <div className="flex items-center gap-0">
-                  <span className="text-4xl font-bold text-white">SIGN</span>
-                  <span className="text-4xl font-bold text-yellow-400">O</span>
-                  <span className="text-4xl font-bold text-white">X</span>
+                  <span className="text-4xl font-bold text-white">SIGNOX</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-0.5 w-16 bg-yellow-400"></div>
+                  <div className="h-0.5 w-16 bg-white"></div>
                   <span className="text-xs text-gray-300 italic">Digital Signage</span>
                 </div>
               </div>
@@ -245,12 +241,10 @@ export default function LoginPage() {
                 />
                 <div className="flex flex-col items-start gap-1">
                   <div className="flex items-center gap-0">
-                    <span className="text-5xl font-black text-white">SIGN</span>
-                    <span className="text-5xl font-black text-yellow-400">O</span>
-                    <span className="text-5xl font-black text-white">X</span>
+                    <span className="text-5xl font-black text-white">SIGNOX</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-0.5 w-20 bg-yellow-400"></div>
+                    <div className="h-0.5 w-20 bg-white"></div>
                     <span className="text-xs text-gray-300 italic">Digital Signage</span>
                   </div>
                 </div>

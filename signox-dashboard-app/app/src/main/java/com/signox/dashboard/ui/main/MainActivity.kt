@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         
         setSupportActionBar(binding.toolbar)
         
-        // Add SignoMart logo to toolbar
+        // Add SignoX logo to toolbar
         val logoView = layoutInflater.inflate(R.layout.toolbar_logo, null)
         binding.toolbar.addView(logoView)
         

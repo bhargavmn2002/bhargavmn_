@@ -191,12 +191,10 @@ export function Sidebar({ user }: SidebarProps) {
           />
           <div className="flex flex-col gap-0.5">
             <div className="flex items-center gap-0">
-              <span className="text-2xl font-bold text-gray-700" style={{ fontFamily: 'Arial, sans-serif', letterSpacing: '-0.5px' }}>SIGN</span>
-              <span className="text-2xl font-bold text-yellow-400" style={{ fontFamily: 'Arial, sans-serif', letterSpacing: '-0.5px' }}>O</span>
-              <span className="text-2xl font-bold text-gray-700" style={{ fontFamily: 'Arial, sans-serif', letterSpacing: '-0.5px' }}>X</span>
+              <span className="text-2xl font-bold text-gray-700" style={{ fontFamily: 'Arial, sans-serif', letterSpacing: '-0.5px' }}>SIGNOX</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="h-0.5 w-12 bg-yellow-400"></div>
+              <div className="h-0.5 w-12 bg-gray-700"></div>
               <span className="text-[10px] text-gray-600 italic whitespace-nowrap">Digital Signage</span>
             </div>
           </div>

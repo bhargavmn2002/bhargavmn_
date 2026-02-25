@@ -11,7 +11,7 @@ object ApiClient {
     
     // HARDCODED SERVER URL - App will always connect to this URL
     // No server configuration screen will be shown
-    private const val FIXED_BASE_URL = "http://192.168.1.232:5000/api"
+    private const val FIXED_BASE_URL = "https://www.signoxcms.com/api"
     private var baseUrl: String = FIXED_BASE_URL
     private var retrofit: Retrofit? = null
     

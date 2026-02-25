@@ -14,6 +14,7 @@ import com.signox.dashboard.data.local.ServerConfigManager
 import com.signox.dashboard.data.model.UserRole
 import com.signox.dashboard.databinding.ActivityLoginBinding
 import com.signox.dashboard.ui.main.MainActivity
+import com.signox.dashboard.utils.AnimationUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -35,16 +36,27 @@ class LoginActivity : AppCompatActivity() {
         setupUI()
         observeViewModel()
         loadCurrentServerUrl()
+        animateViews()
+    }
+    
+    private fun animateViews() {
+        // Animate login card with bounce effect
+        AnimationUtils.bounceIn(binding.cardLogin, 100)
     }
     
     private fun setupUI() {
         binding.btnLogin.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString()
+            
+            // Add pulse animation on button click
+            AnimationUtils.pulse(binding.btnLogin)
+            
             viewModel.login(email, password)
         }
         
         binding.btnServerConfig.setOnClickListener {
+            AnimationUtils.pulse(binding.btnServerConfig)
             showServerConfigDialog()
         }
     }
@@ -166,6 +178,11 @@ class LoginActivity : AppCompatActivity() {
     private fun showError(message: String) {
         binding.tvError.text = message
         binding.tvError.visibility = View.VISIBLE
+        
+        // Shake animation for error
+        AnimationUtils.shake(binding.tvError)
+        AnimationUtils.shake(binding.cardLogin)
+        
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 }
