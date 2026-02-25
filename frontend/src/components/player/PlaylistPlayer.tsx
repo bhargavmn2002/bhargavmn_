@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Hls from 'hls.js';
 
 type MediaType = 'IMAGE' | 'VIDEO';
 
@@ -44,12 +45,93 @@ export function PlaylistPlayer({
 
   const [idx, setIdx] = useState(0);
   const timerRef = useRef<number | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const hlsRef = useRef<Hls | null>(null);
 
   const current = ordered.length > 0 ? ordered[idx % ordered.length] : null;
 
   useEffect(() => {
     setIdx(0);
   }, [ordered.length]);
+
+  // Setup HLS for video playback
+  useEffect(() => {
+    if (!current || current.media.type !== 'VIDEO' || !videoRef.current) return;
+
+    const base = publicBaseUrl?.replace(/\/$/, '') || '';
+    const path = current.media.url?.startsWith('/') ? current.media.url : `/${current.media.url}`;
+    const src = base && path ? `${base}${path}` : null;
+    
+    if (!src) return;
+
+    // Check if it's an HLS stream
+    const isHLS = src.includes('.m3u8');
+
+    if (isHLS && Hls.isSupported()) {
+      // Use HLS.js for HLS streams
+      const hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: false,
+        backBufferLength: 90,
+      });
+      
+      hlsRef.current = hls;
+      hls.loadSource(src);
+      hls.attachMedia(videoRef.current);
+      
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        videoRef.current?.play().catch(err => {
+          console.error('HLS playback error:', err);
+        });
+      });
+
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        console.error('HLS error:', data);
+        if (data.fatal) {
+          switch (data.type) {
+            case Hls.ErrorTypes.NETWORK_ERROR:
+              console.error('Fatal network error, trying to recover');
+              hls.startLoad();
+              break;
+            case Hls.ErrorTypes.MEDIA_ERROR:
+              console.error('Fatal media error, trying to recover');
+              hls.recoverMediaError();
+              break;
+            default:
+              console.error('Fatal error, cannot recover');
+              setIdx((v) => (v + 1) % ordered.length);
+              break;
+          }
+        }
+      });
+
+      return () => {
+        if (hlsRef.current) {
+          hlsRef.current.destroy();
+          hlsRef.current = null;
+        }
+      };
+    } else if (isHLS && videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
+      // Native HLS support (Safari)
+      videoRef.current.src = src;
+      videoRef.current.play().catch(err => {
+        console.error('Native HLS playback error:', err);
+      });
+    } else if (!isHLS) {
+      // Regular video file
+      videoRef.current.src = src;
+      videoRef.current.play().catch(err => {
+        console.error('Video playback error:', err);
+      });
+    }
+
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+    };
+  }, [current?.media.id, publicBaseUrl, ordered.length]);
 
   // Timer for advancing to next item. Depend only on idx and ordered.length so config polling
   // (which replaces items/ordered) doesn't clear the timer and prevent advancement.
@@ -184,8 +266,8 @@ export function PlaylistPlayer({
     />
   ) : (
     <video
+      ref={videoRef}
       key={current.media.id}
-      src={src}
       className="h-full w-full bg-black"
       style={{ ...mediaStyle, pointerEvents: 'none', cursor: 'none' }}
       autoPlay

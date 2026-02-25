@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import Hls from 'hls.js';
 
 type MediaType = 'IMAGE' | 'VIDEO';
 
@@ -58,6 +59,8 @@ export function LayoutPlayer({
   const [sectionStates, setSectionStates] = useState<Record<string, { currentIdx: number }>>({});
   const timerRefs = useRef<Record<string, number>>({});
   const layoutRef = useRef(layout);
+  const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
+  const hlsRefs = useRef<Record<string, Hls | null>>({});
 
   // Keep layout ref updated
   useEffect(() => {
@@ -216,6 +219,86 @@ export function LayoutPlayer({
     };
   }, []);
 
+  // Setup HLS for video sections
+  useEffect(() => {
+    layout.sections.forEach((section) => {
+      const currentItem = getCurrentItem(section);
+      if (!currentItem || currentItem.media.type !== 'VIDEO') return;
+
+      const videoEl = videoRefs.current[section.id];
+      if (!videoEl) return;
+
+      const url = `${publicBaseUrl}${currentItem.media.url}`;
+      const isHLS = url.includes('.m3u8');
+
+      // Cleanup existing HLS instance
+      if (hlsRefs.current[section.id]) {
+        hlsRefs.current[section.id]?.destroy();
+        hlsRefs.current[section.id] = null;
+      }
+
+      if (isHLS && Hls.isSupported()) {
+        const hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: false,
+          backBufferLength: 90,
+        });
+
+        hlsRefs.current[section.id] = hls;
+        hls.loadSource(url);
+        hls.attachMedia(videoEl);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          videoEl.play().catch(err => {
+            console.error('HLS playback error:', err);
+          });
+        });
+
+        hls.on(Hls.Events.ERROR, (event, data) => {
+          console.error('HLS error:', data);
+          if (data.fatal) {
+            switch (data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                console.error('Fatal network error, trying to recover');
+                hls.startLoad();
+                break;
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                console.error('Fatal media error, trying to recover');
+                hls.recoverMediaError();
+                break;
+              default:
+                console.error('Fatal error, cannot recover');
+                handleVideoEnd(section.id);
+                break;
+            }
+          }
+        });
+      } else if (isHLS && videoEl.canPlayType('application/vnd.apple.mpegurl')) {
+        // Native HLS support (Safari)
+        videoEl.src = url;
+        videoEl.play().catch(err => {
+          console.error('Native HLS playback error:', err);
+        });
+      } else if (!isHLS) {
+        // Regular video file
+        videoEl.src = url;
+        videoEl.play().catch(err => {
+          console.error('Video playback error:', err);
+        });
+      }
+    });
+
+    // Cleanup on unmount
+    return () => {
+      Object.values(hlsRefs.current).forEach(hls => {
+        if (hls) {
+          hls.destroy();
+        }
+      });
+      hlsRefs.current = {};
+    };
+  }, [sectionStates, layout.sections, publicBaseUrl, getCurrentItem, handleVideoEnd]);
+
   const renderSectionMedia = (section: LayoutSection, currentItem: LayoutSectionItem | null) => {
     if (!currentItem?.media) return null;
 
@@ -263,8 +346,10 @@ export function LayoutPlayer({
         />
       ) : (
         <video
+          ref={(el) => {
+            videoRefs.current[section.id] = el;
+          }}
           key={`${section.id}-${currentItem.id}-${currentItem.media.id}`}
-          src={url}
           className="h-full w-full bg-black"
           style={{ ...mediaStyle, pointerEvents: 'none', cursor: 'none' }}
           autoPlay
